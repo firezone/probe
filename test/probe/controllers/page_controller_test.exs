@@ -1,5 +1,5 @@
-defmodule ProbeWeb.PageControllerTest do
-  use ProbeWeb.ConnCase
+defmodule Probe.PageControllerTest do
+  use Probe.ConnCase
 
   test "GET /", %{conn: conn} do
     conn = get(conn, ~p"/")

@@ -12,11 +12,11 @@ config :probe,
   generators: [timestamp_type: :utc_datetime, binary_id: true]
 
 # Configures the endpoint
-config :probe, ProbeWeb.Endpoint,
+config :probe, Probe.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
-    formats: [html: ProbeWeb.ErrorHTML, json: ProbeWeb.ErrorJSON],
+    formats: [html: Probe.ErrorHTML, json: Probe.ErrorJSON],
     layout: false
   ],
   pubsub_server: Probe.PubSub,

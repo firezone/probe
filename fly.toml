@@ -10,26 +10,39 @@ kill_signal = 'SIGTERM'
 [build]
 
 [deploy]
-  release_command = '/app/bin/migrate'
+release_command = '/app/bin/migrate'
 
 [env]
-  PHX_HOST = 'probe.fly.dev'
-  PORT = '8080'
+PHX_HOST = 'probe.fly.dev'
+PORT = '8080'
 
 [http_service]
-  internal_port = 8080
-  force_https = true
-  auto_stop_machines = true
-  auto_start_machines = true
-  min_machines_running = 0
-  processes = ['app']
+internal_port = 8080
+force_https = true
+auto_stop_machines = true
+auto_start_machines = true
+min_machines_running = 0
+processes = ['app']
 
-  [http_service.concurrency]
-    type = 'connections'
-    hard_limit = 1000
-    soft_limit = 1000
+[http_service.concurrency]
+type = 'connections'
+hard_limit = 1000
+soft_limit = 1000
+
+# wireguard
+[[services]]
+internal_port = 51820
+protocol = "udp"
+[[services.ports]]
+port = 51820
+
+[[services]]
+internal_port = 51821
+protocol = "udp"
+[[services.ports]]
+port = 143
 
 [[vm]]
-  memory = '1gb'
-  cpu_kind = 'shared'
-  cpus = 1
+memory = '1gb'
+cpu_kind = 'shared'
+cpus = 1

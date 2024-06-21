@@ -15,7 +15,7 @@ config :probe, Probe.Repo,
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
-config :probe, ProbeWeb.Endpoint,
+config :probe, Probe.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "QVealHzfNFkJpJIrDkZ6f7mWg9SmHtOqfbxOO0v7SgD4T3O20TXogttCjGmqquXN",
   server: false

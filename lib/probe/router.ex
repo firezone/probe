@@ -1,11 +1,11 @@
-defmodule ProbeWeb.Router do
-  use ProbeWeb, :router
+defmodule Probe.Router do
+  use Probe, :router
 
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_live_flash
-    plug :put_root_layout, html: {ProbeWeb.Layouts, :root}
+    plug :put_root_layout, html: {Probe.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
   end
@@ -14,14 +14,14 @@ defmodule ProbeWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", ProbeWeb do
+  scope "/", Probe do
     pipe_through :browser
 
     get "/", PageController, :home
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", ProbeWeb do
+  # scope "/api", Probe do
   #   pipe_through :api
   # end
 
@@ -37,7 +37,7 @@ defmodule ProbeWeb.Router do
     scope "/dev" do
       pipe_through :browser
 
-      live_dashboard "/dashboard", metrics: ProbeWeb.Telemetry
+      live_dashboard "/dashboard", metrics: Probe.Telemetry
     end
   end
 end

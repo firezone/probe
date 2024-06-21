@@ -1,5 +1,5 @@
-defmodule ProbeWeb.PageController do
-  use ProbeWeb, :controller
+defmodule Probe.PageController do
+  use Probe, :controller
 
   def home(conn, _params) do
     # The home page is often custom made,

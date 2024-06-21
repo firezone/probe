@@ -1,10 +1,10 @@
-defmodule ProbeWeb.PageHTML do
+defmodule Probe.PageHTML do
   @moduledoc """
   This module contains pages rendered by PageController.
 
   See the `page_html` directory for all templates available.
   """
-  use ProbeWeb, :html
+  use Probe, :html
 
   embed_templates "page_html/*"
 end

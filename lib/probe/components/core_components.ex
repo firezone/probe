@@ -1,4 +1,4 @@
-defmodule ProbeWeb.CoreComponents do
+defmodule Probe.CoreComponents do
   @moduledoc """
   Provides core UI components.
 
@@ -653,9 +653,9 @@ defmodule ProbeWeb.CoreComponents do
     # uncommenting and adjusting the following code:
 
     # if count = opts[:count] do
-    #   Gettext.dngettext(ProbeWeb.Gettext, "errors", msg, msg, count, opts)
+    #   Gettext.dngettext(Probe.Gettext, "errors", msg, msg, count, opts)
     # else
-    #   Gettext.dgettext(ProbeWeb.Gettext, "errors", msg, opts)
+    #   Gettext.dgettext(Probe.Gettext, "errors", msg, opts)
     # end
 
     Enum.reduce(opts, msg, fn {key, value}, acc ->

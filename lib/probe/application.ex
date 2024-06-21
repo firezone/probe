@@ -8,14 +8,14 @@ defmodule Probe.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      ProbeWeb.Telemetry,
+      Probe.Telemetry,
       Probe.Repo,
       {DNSCluster, query: Application.get_env(:probe, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Probe.PubSub},
       # Start a worker by calling: Probe.Worker.start_link(arg)
       # {Probe.Worker, arg},
       # Start to serve requests, typically the last entry
-      ProbeWeb.Endpoint
+      Probe.Endpoint
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
@@ -28,7 +28,7 @@ defmodule Probe.Application do
   # whenever the application is updated.
   @impl true
   def config_change(changed, _new, removed) do
-    ProbeWeb.Endpoint.config_change(changed, removed)
+    Probe.Endpoint.config_change(changed, removed)
     :ok
   end
 end

@@ -1,4 +1,4 @@
-defmodule ProbeWeb.Endpoint do
+defmodule Probe.Endpoint do
   use Phoenix.Endpoint, otp_app: :probe
 
   # The session will be stored in the cookie and signed,
@@ -23,7 +23,7 @@ defmodule ProbeWeb.Endpoint do
     at: "/",
     from: :probe,
     gzip: false,
-    only: ProbeWeb.static_paths()
+    only: Probe.static_paths()
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
@@ -49,5 +49,5 @@ defmodule ProbeWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
-  plug ProbeWeb.Router
+  plug Probe.Router
 end
