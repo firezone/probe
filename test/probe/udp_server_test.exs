@@ -2,52 +2,74 @@ defmodule Probe.UDPServerTest do
   use ExUnit.Case, async: true
 
   setup do
-    {:ok, client_socket} = :gen_udp.open(0, binary: true, active: true)
-    {:ok, server_pid} = start_supervised(Probe.UDPServer, port: 0, handler: self())
+    {:ok, server_pid} = start_supervised({Probe.UDPServer, port: 0, handler: self()})
     server_port = GenServer.call(server_pid, :get_port)
-    {:ok, %{client_socket: client_socket, server_port: server_port, server_pid: server_pid}}
+
+    {:ok, client_socket} = :gen_udp.open(0, [:binary, {:active, true}, {:reuseaddr, true}])
+    :gen_udp.connect(client_socket, {127, 0, 0, 1}, server_port)
+
+    on_exit(fn ->
+      :gen_udp.close(client_socket)
+    end)
+
+    {:ok, %{server_pid: server_pid, server_port: server_port, client_socket: client_socket}}
   end
 
-  test "it starts a UDP server", %{client_socket: client_socket, server_port: server_port} do
-    random_sender_index = :rand.uniform(0xFFFFFFFF) - 1
-    random_unencrypted_ephemeral = :crypto.strong_rand_bytes(256)
-
-    initiation_packet =
-      <<
-        1::size(8),
-        random_sender_index::size(32)-big,
-        random_unencrypted_ephemeral::binary-size(256)
-      >>
+  test "initiates to WireGuard connection and receives data packet", %{
+    client_socket: client_socket,
+    server_port: server_port
+  } do
+    {sender_index, initiation_packet} = generate_initiator_packet()
+    assert byte_size(initiation_packet) == 116
 
     # Send wireguard handshake initiation
     :gen_udp.send(client_socket, {127, 0, 0, 1}, server_port, initiation_packet)
 
     # Wait for the response
-    assert_receive {:udp, ^server_port, {127, 0, 0, 1}, response_packet}
+    assert_receive {:udp, ^client_socket, {127, 0, 0, 1}, _client_port, response_packet}
+    assert byte_size(response_packet) == 92
 
-    # assert byte_size(response_packet) == 92
+    assert <<2::size(8), 0::size(24), ^sender_index::binary-size(4),
+             receiver_index::binary-size(4), _unencrypted_ephemeral::binary-size(32),
+             0::size(128), _mac1::binary-size(16), 0::size(128)>> = response_packet
 
-    assert <<
-             2::size(8),
-             ^random_sender_index::size(32)-big,
-             _receiver_index::size(32)-big,
-             0::size(128)
-           >> = response_packet
+    # Send data packet
+    counter = :rand.uniform(:math.pow(2, 64) |> trunc()) - 1
+    counter_binary = :binary.encode_unsigned(counter, :little)
+    encrypted_encapsulated_packet = :crypto.strong_rand_bytes(128)
+
+    data_packet =
+      <<4::size(8), 0::size(24), receiver_index::binary-size(4), counter_binary::binary-size(8),
+        sender_index::binary-size(4), encrypted_encapsulated_packet::binary>>
+
+    :gen_udp.send(client_socket, {127, 0, 0, 1}, server_port, data_packet)
+
+    # Receive the response
+    assert_receive {:udp, ^client_socket, {127, 0, 0, 1}, _client_port, response_data_packet}
+
+    assert <<4::size(8), 0::size(24), ^sender_index::binary-size(4),
+             ^counter_binary::binary-size(8),
+             ^encrypted_encapsulated_packet::binary>> = response_data_packet
   end
 
-  defp generate_packet(:initiation) do
-    # Assuming a simplified packet structure for initiation
-    # Type (1 byte), Sender Index (4 bytes), Unencrypted Ephemeral (32 bytes)
-    <<1::size(8), 1234::size(32)-big, 32::binary-size(256)>>
-  end
+  def generate_initiator_packet do
+    sender_index = :crypto.strong_rand_bytes(4)
+    unencrypted_ephemeral = :crypto.strong_rand_bytes(32)
+    encrypted_static = :crypto.strong_rand_bytes(32)
+    encrypted_timestamp = :crypto.strong_rand_bytes(12)
+    mac1 = :crypto.strong_rand_bytes(16)
+    mac2 = :crypto.strong_rand_bytes(16)
 
-  defp generate_packet(:response) do
-    # Type (1 byte), Sender Index (4 bytes), Receiver Index (4 bytes), Empty Payload (16 bytes)
-    <<2::size(8), 1234::size(32)-big, 5678::size(32)-big, 16::binary-size(128)>>
-  end
-
-  defp generate_packet(:cookie) do
-    # Type (1 byte), Receiver Index (4 bytes), Cookie (16 bytes)
-    <<3::size(8), 5678::size(32)-big, 16::binary-size(128)>>
+    {sender_index,
+     <<
+       1::size(8),
+       0::size(24),
+       sender_index::binary,
+       unencrypted_ephemeral::binary,
+       encrypted_static::binary,
+       encrypted_timestamp::binary,
+       mac1::binary,
+       mac2::binary
+     >>}
   end
 end
