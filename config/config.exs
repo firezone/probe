@@ -11,6 +11,10 @@ config :probe,
   ecto_repos: [Probe.Repo],
   generators: [timestamp_type: :utc_datetime, binary_id: true]
 
+config :probe, Probe.Repo,
+  migration_timestamps: [type: :timestamptz],
+  start_apps_before_migration: [:ssl, :logger_json]
+
 # Configures the endpoint
 config :probe, Probe.Endpoint,
   url: [host: "localhost"],

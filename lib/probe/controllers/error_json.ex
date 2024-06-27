@@ -1,4 +1,4 @@
-defmodule Probe.ErrorJSON do
+defmodule Probe.Controllers.ErrorJSON do
   @moduledoc """
   This module is invoked by your endpoint in case of errors on JSON requests.
 

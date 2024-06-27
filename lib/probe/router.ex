@@ -14,16 +14,16 @@ defmodule Probe.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", Probe do
-    pipe_through :browser
-
-    get "/", PageController, :home
-  end
-
   # Other scopes may use custom stacks.
   # scope "/api", Probe do
   #   pipe_through :api
   # end
+
+  scope "/", Probe do
+    pipe_through :browser
+
+    live "/", Live.Index
+  end
 
   # Enable LiveDashboard in development
   if Application.compile_env(:probe, :dev_routes) do

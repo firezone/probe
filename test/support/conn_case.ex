@@ -28,6 +28,9 @@ defmodule Probe.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import Probe.ConnCase
+
+      alias Probe.Repo
+      alias Probe.Fixtures
     end
   end
 

@@ -1,5 +1,5 @@
 defmodule Probe do
-@moduledoc """
+  @moduledoc """
   The entrypoint for defining your web interface, such
   as controllers, components, channels, and so on.
 
@@ -16,6 +16,16 @@ defmodule Probe do
   below. Instead, define additional modules and import
   those modules here.
   """
+
+  def schema do
+    quote do
+      use Ecto.Schema
+      import Ecto.Changeset
+
+      @primary_key {:id, :binary_id, autogenerate: true}
+      @foreign_key_type :binary_id
+    end
+  end
 
   def static_paths, do: ~w(assets fonts images favicon.ico robots.txt)
 

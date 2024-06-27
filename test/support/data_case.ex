@@ -18,12 +18,13 @@ defmodule Probe.DataCase do
 
   using do
     quote do
-      alias Probe.Repo
-
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
       import Probe.DataCase
+
+      alias Probe.Repo
+      alias Probe.Fixtures
     end
   end
 
