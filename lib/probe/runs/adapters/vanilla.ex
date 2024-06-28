@@ -25,7 +25,7 @@ defmodule Probe.Runs.Adapters.Vanilla do
 
     %{
       initiator: initiator_packet,
-      data_packet: data_packet
+      data: data_packet
     }
   end
 
@@ -35,26 +35,26 @@ defmodule Probe.Runs.Adapters.Vanilla do
     encrypted_timestamp = :crypto.strong_rand_bytes(12)
     mac1 = :crypto.strong_rand_bytes(16)
 
-    {sender_index,
-     <<
-       1::size(8),
-       0::size(24),
-       sender_index::binary,
-       unencrypted_ephemeral::binary,
-       encrypted_static::binary,
-       encrypted_timestamp::binary,
-       mac1::binary,
-       0::size(128)
-     >>}
+    <<
+      1::size(8),
+      0::size(24),
+      sender_index::binary,
+      unencrypted_ephemeral::binary,
+      encrypted_static::binary,
+      encrypted_timestamp::binary,
+      mac1::binary,
+      0::size(128)
+    >>
   end
 
   defp generate_data_packet(check_id, sender_index) do
     counter = :rand.uniform(:math.pow(2, 64) |> trunc()) - 1
     counter_binary = :binary.encode_unsigned(counter, :little)
+    receiver_index = :rand.uniform(:math.pow(2, 64) |> trunc()) - 1
     encrypted_encapsulated_packet = Ecto.UUID.dump!(check_id) <> :crypto.strong_rand_bytes(128)
 
-    <<4::size(8), 0::size(24), sender_index::binary-size(4), counter_binary::binary-size(8),
-      encrypted_encapsulated_packet::binary>>
+    <<4::size(8), 0::size(24), receiver_index::size(32), sender_index::binary-size(4),
+      counter_binary::binary-size(8), encrypted_encapsulated_packet::binary>>
   end
 
   # Handle initiation packet
@@ -66,7 +66,7 @@ defmodule Probe.Runs.Adapters.Vanilla do
     {:ok, check_id} = Ecto.UUID.load(check_id)
     {:ok, _check} = Runs.update_check(check_id, :in_progress)
 
-    receiver_index = :crypto.strong_rand_bytes(4)
+    receiver_index = :rand.uniform(:math.pow(2, 64) |> trunc()) - 1
     unencrypted_ephemeral = :crypto.strong_rand_bytes(32)
     mac1 = :crypto.strong_rand_bytes(16)
 
@@ -76,8 +76,8 @@ defmodule Probe.Runs.Adapters.Vanilla do
 
   # Handle data packet
   def handle_packet(
-        <<4::size(8), 0::size(24), _receiver_index::binary-size(4),
-          counter_binary::binary-size(8), sender_index::binary-size(4), check_id::binary-size(16),
+        <<4::size(8), 0::size(24), _receiver_index::size(32), counter_binary::binary-size(8),
+          sender_index::binary-size(4), check_id::binary-size(16),
           rest_encrypted_encapsulated_packet::binary>>
       ) do
     {:ok, check_id} = Ecto.UUID.load(check_id)
