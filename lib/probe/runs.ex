@@ -27,6 +27,9 @@ defmodule Probe.Runs do
     |> Repo.insert()
   end
 
+  def list_aggregates_by_country do
+  end
+
   def update_check(check_id, status) do
     from(check in Check, as: :checks)
     |> where([checks: checks], checks.id == ^check_id)
