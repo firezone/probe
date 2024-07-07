@@ -2,13 +2,31 @@ defmodule Probe.Live.Index do
   use Probe, :live_view
 
   def mount(_params, _session, socket) do
-    device =
+    os =
       case UAParser.parse(get_connect_info(socket, :user_agent)) do
-        %UAParser.UA{device: %UAParser.Device{family: fam}} -> fam
+        %UAParser.UA{os: %UAParser.OperatingSystem{family: os}} -> os
         _ -> "Unknown"
       end
 
-    {:ok, assign(socket, device: device)}
+    topic = :crypto.strong_rand_bytes(8) |> Base.url_encode64(padding: false)
+
+    token =
+      Phoenix.Token.sign(Probe.Endpoint, "topic", %{
+        topic: topic,
+        start: :os.system_time(:millisecond)
+      })
+
+    :ok = Probe.PubSub.subscribe("run:#{topic}")
+
+    {:ok,
+     assign(socket,
+       os: os,
+       duration: nil,
+       remote_ip: nil,
+       status: :pending,
+       token: token,
+       topic: topic
+     )}
   end
 
   def render(assigns) do
@@ -55,17 +73,20 @@ defmodule Probe.Live.Index do
           <div class="flex items-center">
             <ul class="flex flex-row mt-0 w-full text-sm font-medium">
               <li class="inline dark:border-gray-700 border-b-0">
-                <.link navigate="/" class={tab_class(@live_action, :run)}>
+                <.link navigate="/" class={tab_class(@live_action, [:run])}>
                   Run test
                 </.link>
               </li>
               <li class="inline dark:border-gray-700 border-b-0">
-                <.link navigate="/results" class={tab_class(@live_action, :results)}>
+                <.link
+                  navigate="/results"
+                  class={tab_class(@live_action, [:results_map, :results_table])}
+                >
                   View results
                 </.link>
               </li>
               <li class="inline dark:border-gray-700 border-b-0">
-                <.link navigate="/faq" class={tab_class(@live_action, :faq)}>
+                <.link navigate="/faq" class={tab_class(@live_action, [:faq])}>
                   FAQ
                 </.link>
               </li>
@@ -76,17 +97,24 @@ defmodule Probe.Live.Index do
 
       <main class="dark:bg-gray-900 flex-1 p-4 space-y-4">
         <%= if @live_action == :run do %>
-          <.live_component module={Probe.Live.Component.Run} id="run" device={@device} />
+          <.live_component
+            module={Probe.Live.Component.Run}
+            id="run"
+            remote_ip={@remote_ip}
+            topic={@topic}
+            token={@token}
+            status={@status}
+            duration={@duration}
+            os={@os}
+          />
         <% end %>
-        <%= if @live_action == :results do %>
+        <%= if @live_action in [:results_map, :results_table] do %>
           <.live_component module={Probe.Live.Component.Results} id="results" />
         <% end %>
         <%= if @live_action == :faq do %>
           <.live_component module={Probe.Live.Component.Faq} id="faq" />
         <% end %>
       </main>
-
-      <footer></footer>
     </div>
     """
   end
@@ -94,7 +122,7 @@ defmodule Probe.Live.Index do
   defp tab_class(live_action, action) do
     common = "block py-3 px-4"
 
-    if live_action == action do
+    if live_action in action do
       ~w[
         #{common}
         border-b-2
@@ -115,6 +143,35 @@ defmodule Probe.Live.Index do
         dark:hover:border-primary-500
         hover:border-primary-600
       ]
+    end
+  end
+
+  def handle_info({:started, %{remote_ip: remote_ip}}, socket) do
+    {:noreply,
+     assign(socket,
+       status: :started,
+       started_at: :os.system_time(:millisecond),
+       remote_ip: remote_ip
+     )}
+  end
+
+  def handle_info({:completed}, socket) do
+    if socket.assigns.status == :started do
+      {:noreply,
+       assign(socket,
+         status: :completed,
+         duration: :os.system_time(:millisecond) - socket.assigns.started_at
+       )}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_info({:failed}, socket) do
+    if socket.assigns.status == :started do
+      {:noreply, assign(socket, status: :failed)}
+    else
+      {:noreply, socket}
     end
   end
 end

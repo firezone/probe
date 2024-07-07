@@ -57,6 +57,13 @@ defmodule Probe.Runs do
     |> Repo.fetch()
   end
 
+  def fetch_run_by_topic!(topic) do
+    from(run in Run, as: :runs)
+    |> where([runs: runs], runs.topic == ^topic)
+    |> preload(:checks)
+    |> Repo.one!()
+  end
+
   defp run_topic(%Run{} = run), do: run_topic(run.id)
   defp run_topic(run_id), do: "runs:#{run_id}"
 

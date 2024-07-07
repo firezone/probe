@@ -11,7 +11,9 @@ defmodule Probe.Router do
   end
 
   pipeline :api do
-    plug :accepts, ["json"]
+    plug :accepts, ["text"]
+
+    post "/runs/:token", Probe.Controllers.Run, :start
   end
 
   # Other scopes may use custom stacks.
@@ -22,8 +24,11 @@ defmodule Probe.Router do
   scope "/", Probe do
     pipe_through :browser
 
+    get "/runs/:token", Controllers.Run, :show
+
     live "/", Live.Index, :run
-    live "/results", Live.Index, :results
+    live "/results", Live.Index, :results_map
+    live "/results/list", Live.Index, :results_list
     live "/faq", Live.Index, :faq
   end
 

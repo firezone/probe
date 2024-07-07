@@ -1,7 +1,7 @@
-defmodule Probe.MapComponent do
+defmodule Probe.MapComponents do
   use Phoenix.Component
 
-  def map(assigns) do
+  def results_map(assigns) do
     ~H"""
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 2754 1398" class="flex">
       <title>World Map</title>

@@ -3,7 +3,7 @@ defmodule Probe.Controllers.Run do
 
   action_fallback Probe.Controllers.Fallback
 
-  def start(conn, _params) do
+  def start(conn, %{"token" => token}) do
     # session_id = Map.get(params, "session_id")
 
     # {location_region, location_city, {location_lat, location_lon}} =
@@ -20,7 +20,43 @@ defmodule Probe.Controllers.Run do
 
     # The home page is often custom made,
     # so skip the default app layout.
-    render(conn, :home, layout: false)
+
+    with {:ok, %{topic: topic}} <-
+           Phoenix.Token.verify(Probe.Endpoint, "topic", token, max_age: 60) do
+      Probe.PubSub.broadcast("run:#{topic}", {:started, %{remote_ip: conn.remote_ip}})
+
+      Task.start(fn ->
+        Process.sleep(10_000)
+
+        # State machine in Liveview process will prevent going from success -> failed
+        Probe.PubSub.broadcast("run:#{topic}", {:failed})
+      end)
+
+      # TODO: Start a GenServer to handle the run
+      # TODO: Respond with actual port to connect to
+
+      send_resp(conn, 200, "51820")
+    else
+      _ ->
+        send_resp(conn, 401, "invalid or expired token")
+    end
+  end
+
+  def show(conn, %{"token" => token}) do
+    with {:ok, %{topic: topic, start: start_time}} <-
+           Phoenix.Token.verify(Probe.Endpoint, "topic", token, max_age: :infinity) do
+      run = Probe.Runs.fetch_run_by_topic!(topic)
+      duration = DateTime.to_unix(run.updated_at, :millisecond) - start_time
+
+      send_resp(conn, 200, ~s"""
+        Started: #{start_time}
+        Duration: #{duration}ms
+        Status: #{run.status}
+      """)
+    else
+      _ ->
+        send_resp(conn, 401, "invalid or expired token")
+    end
   end
 
   # defp get_load_balancer_ip_location(%Plug.Conn{} = conn) do
