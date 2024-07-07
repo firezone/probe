@@ -29,6 +29,7 @@ let DarkModeToggle = {
         if (localStorage.getItem("color-theme") === "light") {
           document.documentElement.classList.add("dark");
           localStorage.setItem("color-theme", "dark");
+          console.log("set to dark");
         } else {
           document.documentElement.classList.remove("dark");
           localStorage.setItem("color-theme", "light");
@@ -36,6 +37,7 @@ let DarkModeToggle = {
 
         // if NOT set via local storage previously
       } else {
+        console.log("not found in local storage");
         if (document.documentElement.classList.contains("dark")) {
           document.documentElement.classList.remove("dark");
           localStorage.setItem("color-theme", "light");

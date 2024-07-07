@@ -4,7 +4,7 @@ defmodule Probe.Live.Index do
   def render(assigns) do
     ~H"""
     <div class="antialiased bg-gray-50 dark:bg-gray-900">
-      <div class="absolute right-0 top-0 p-4">
+      <div class="absolute right-0 top-6 px-4">
         <button
           id="theme-toggle"
           phx-hook="DarkModeToggle"
