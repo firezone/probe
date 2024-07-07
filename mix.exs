@@ -66,6 +66,7 @@ defmodule Probe.MixProject do
 
       # Other
       {:jason, "~> 1.2"},
+      {:ua_parser, "~> 1.9"},
 
       # Tests
       {:floki, ">= 0.30.0", only: :test}

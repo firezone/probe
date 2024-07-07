@@ -94,6 +94,8 @@ defmodule Probe do
       import Phoenix.HTML
       # Core UI components and translation
       import Probe.CoreComponents
+      import Probe.MapComponent
+      import Probe.ListComponent
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS
