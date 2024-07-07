@@ -1,6 +1,16 @@
 defmodule Probe.Live.Index do
   use Probe, :live_view
 
+  def mount(_params, _session, socket) do
+    device =
+      case UAParser.parse(get_connect_info(socket, :user_agent)) do
+        %UAParser.UA{device: %UAParser.Device{family: fam}} -> fam
+        _ -> "Unknown"
+      end
+
+    {:ok, assign(socket, device: device)}
+  end
+
   def render(assigns) do
     ~H"""
     <div class="antialiased bg-gray-50 dark:bg-gray-900">
@@ -66,7 +76,7 @@ defmodule Probe.Live.Index do
 
       <main class="dark:bg-gray-900 flex-1 p-4 space-y-4">
         <%= if @live_action == :run do %>
-          <.live_component module={Probe.Live.Component.Run} id="run" />
+          <.live_component module={Probe.Live.Component.Run} id="run" device={@device} />
         <% end %>
         <%= if @live_action == :results do %>
           <.live_component module={Probe.Live.Component.Results} id="results" />
