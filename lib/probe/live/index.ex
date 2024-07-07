@@ -4,24 +4,24 @@ defmodule Probe.Live.Index do
   def render(assigns) do
     ~H"""
     <div class="antialiased bg-gray-50 dark:bg-gray-900">
-      <div class="items-center justify-center bg-gray-50 dark:bg-gray-900 py-5 hidden lg:flex">
+      <div class="items-center justify-center bg-gray-50 dark:bg-gray-900 py-5 flex">
         <nav
           id="toggleMobileMenu"
           class="bg-gray-50 border-b border-gray-200 dark:bg-gray-900 block mx-auto dark:border-gray-800"
         >
           <div class="flex items-center">
-            <ul class="flex flex-col mt-0 w-full text-sm font-medium lg:flex-row">
-              <li class="block border-b dark:border-gray-700 lg:inline lg:border-b-0">
+            <ul class="flex flex-row mt-0 w-full text-sm font-medium">
+              <li class="inline dark:border-gray-700 border-b-0">
                 <.link navigate="/" class={tab_class(@live_action, :run)}>
                   Run test
                 </.link>
               </li>
-              <li class="block border-b dark:border-gray-700 lg:inline lg:border-b-0">
+              <li class="inline dark:border-gray-700 border-b-0">
                 <.link navigate="/results" class={tab_class(@live_action, :results)}>
                   View results
                 </.link>
               </li>
-              <li class="block border-b dark:border-gray-700 lg:inline lg:border-b-0">
+              <li class="inline dark:border-gray-700 border-b-0">
                 <.link navigate="/faq" class={tab_class(@live_action, :faq)}>
                   FAQ
                 </.link>
