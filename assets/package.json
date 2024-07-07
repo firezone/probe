@@ -1,0 +1,22 @@
+{
+  "name": "probe",
+  "version": "0.1.0",
+  "description": "Probe assets",
+  "main": "tailwind.config.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/firezone/probe.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/firezone/probe/issues"
+  },
+  "homepage": "https://github.com/firezone/probe#readme",
+  "dependencies": {
+    "flowbite": "^2.4.1"
+  }
+}
