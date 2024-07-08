@@ -9,11 +9,14 @@ defmodule Probe.Runs.Run do
     field :remote_ip_location_lon, :float
     field :remote_ip_provider, :string
 
+    field :topic, :string
+    field :port, :integer
+
     # TODO: we need to store hash or remote_ip or something similar to prevent one person from submitting too many runs
 
     has_many :checks, Probe.Runs.Check
 
-    timestamps(updated_at: false, type: :utc_datetime_usec)
+    timestamps(ype: :utc_datetime_usec)
   end
 
   def changeset(%__MODULE__{} = run \\ %__MODULE__{}, attrs) do
@@ -24,12 +27,16 @@ defmodule Probe.Runs.Run do
       :remote_ip_location_city,
       :remote_ip_location_lat,
       :remote_ip_location_lon,
-      :remote_ip_provider
+      :remote_ip_provider,
+      :topic,
+      :port
     ])
     |> validate_required([
       :remote_ip_location_country,
       :remote_ip_location_lat,
-      :remote_ip_location_lon
+      :remote_ip_location_lon,
+      :topic,
+      :port
     ])
   end
 end

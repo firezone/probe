@@ -8,25 +8,7 @@ defmodule Probe.Live.Index do
         _ -> "Unknown"
       end
 
-    topic = :crypto.strong_rand_bytes(8) |> Base.url_encode64(padding: false)
-
-    token =
-      Phoenix.Token.sign(Probe.Endpoint, "topic", %{
-        topic: topic,
-        start: :os.system_time(:millisecond)
-      })
-
-    :ok = Probe.PubSub.subscribe("run:#{topic}")
-
-    {:ok,
-     assign(socket,
-       os: os,
-       duration: nil,
-       remote_ip: nil,
-       status: :pending,
-       token: token,
-       topic: topic
-     )}
+    {:ok, assign(socket, os: os, output: "Waiting on test to start...")}
   end
 
   def render(assigns) do
@@ -97,16 +79,9 @@ defmodule Probe.Live.Index do
 
       <main class="dark:bg-gray-900 flex-1 p-4 space-y-4">
         <%= if @live_action == :run do %>
-          <.live_component
-            module={Probe.Live.Component.Run}
-            id="run"
-            remote_ip={@remote_ip}
-            topic={@topic}
-            token={@token}
-            status={@status}
-            duration={@duration}
-            os={@os}
-          />
+          <.live_component module={Probe.Live.Component.Run} id="run" os={@os} output={@output} />
+        <% else %>
+          Waiting on WebSocket connection...
         <% end %>
         <%= if @live_action in [:results_map, :results_table] do %>
           <.live_component module={Probe.Live.Component.Results} id="results" />
@@ -150,17 +125,16 @@ defmodule Probe.Live.Index do
     {:noreply,
      assign(socket,
        status: :started,
-       started_at: :os.system_time(:millisecond),
-       remote_ip: remote_ip
+       output: socket.assigns.output <> "\n\nTest started! Remote IP: #{:inet.ntoa(remote_ip)}"
      )}
   end
 
   def handle_info({:completed}, socket) do
-    if socket.assigns.status == :started do
+    if socket.assigns.status not in [:pending, :failed] do
       {:noreply,
        assign(socket,
          status: :completed,
-         duration: :os.system_time(:millisecond) - socket.assigns.started_at
+         output: socket.assigns.output <> "\n\nTest completed successfully!"
        )}
     else
       {:noreply, socket}
@@ -168,8 +142,9 @@ defmodule Probe.Live.Index do
   end
 
   def handle_info({:failed}, socket) do
-    if socket.assigns.status == :started do
-      {:noreply, assign(socket, status: :failed)}
+    if socket.assigns.status not in [:pending, :completed] do
+      {:noreply,
+       assign(socket, status: :failed, output: socket.assigns.output <> "\n\nTest failed!")}
     else
       {:noreply, socket}
     end

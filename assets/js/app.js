@@ -20,7 +20,7 @@ import "phoenix_html";
 // Establish Phoenix Socket and LiveView configuration.
 import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
-import { DarkModeToggle, ResetCopyIcon } from "./hooks";
+import { DarkModeToggle, ResetCopyIcon, InitFlowbite } from "./hooks";
 import "flowbite/dist/flowbite.phoenix.js";
 
 let csrfToken = document
@@ -28,7 +28,7 @@ let csrfToken = document
   .getAttribute("content");
 let liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
-  hooks: { DarkModeToggle, ResetCopyIcon },
+  hooks: { DarkModeToggle, ResetCopyIcon, InitFlowbite },
   params: { _csrf_token: csrfToken },
 });
 

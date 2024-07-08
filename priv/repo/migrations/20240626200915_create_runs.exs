@@ -12,7 +12,7 @@ defmodule Probe.Repo.Migrations.CreateRuns do
       add :remote_ip_location_lon, :float, null: false
       add :remote_ip_provider, :string
 
-      timestamps(updated_at: false, type: :utc_datetime_usec)
+      timestamps(type: :utc_datetime_usec)
     end
   end
 end

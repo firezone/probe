@@ -1,18 +1,41 @@
 defmodule Probe.Live.Component.Run do
   use Probe, :live_component
 
+  @default_port 51_820
+
+  def mount(socket) do
+    if connected?(socket) do
+      topic = :crypto.strong_rand_bytes(8) |> Base.url_encode64(padding: false)
+
+      # FYI: Comoponents don't have their process -- this binds the parent LiveView PID
+      # to the topic, so that's where our handle_info's are. This is here for the sake of
+      # encapsulation and to prevent the LiveView from having to know about the PubSub topic.
+      :ok = Probe.PubSub.subscribe("run:#{topic}")
+
+      token =
+        Phoenix.Token.sign(Probe.Endpoint, "topic", %{
+          topic: topic,
+          port: @default_port
+        })
+
+      {:ok,
+       assign(socket,
+         token: token,
+         topic: topic,
+         port: @default_port
+       )}
+    else
+      {:ok, socket}
+    end
+  end
+
   def render(assigns) do
     ~H"""
     <div class="max-w-screen-md mx-auto">
       <div class="flex w-full justify-center mb-8">
         <%= if @os =~ ~r/(Mac OS X|Windows|Linux|FreeBSD|OpenBSD)/ do %>
           <div class="inline-flex rounded-md shadow-sm" role="group">
-            <button
-              phx-target={@myself}
-              phx-click={show_macos()}
-              id="macos-btn"
-              type="button"
-              class={~w[
+            <button phx-click={show_macos()} id="macos-btn" type="button" class={~w[
                 inline-flex
                 items-center
                 px-4
@@ -36,8 +59,7 @@ defmodule Probe.Live.Component.Run do
                 dark:hover:bg-gray-700
                 dark:focus:ring-blue-500
                 dark:focus:text-white
-              ]}
-            >
+              ]}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 814 1000"
@@ -49,12 +71,7 @@ defmodule Probe.Live.Component.Run do
               </svg>
               macOS
             </button>
-            <button
-              phx-target={@myself}
-              phx-click={show_windows()}
-              id="windows-btn"
-              type="button"
-              class={~w[
+            <button phx-click={show_windows()} id="windows-btn" type="button" class={~w[
                 inline-flex
                 items-center
                 px-4
@@ -79,8 +96,7 @@ defmodule Probe.Live.Component.Run do
                 dark:hover:bg-gray-700
                 dark:focus:ring-blue-500
                 dark:focus:text-white
-              ]}
-            >
+              ]}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="w-4 h-4 me-2"
@@ -91,12 +107,7 @@ defmodule Probe.Live.Component.Run do
               </svg>
               Windows
             </button>
-            <button
-              phx-target={@myself}
-              phx-click={show_linux()}
-              id="linux-btn"
-              type="button"
-              class={~w[
+            <button phx-click={show_linux()} id="linux-btn" type="button" class={~w[
                 inline-flex
                 items-center
                 px-4
@@ -120,8 +131,7 @@ defmodule Probe.Live.Component.Run do
                 dark:hover:bg-gray-700
                 dark:focus:ring-blue-500
                 dark:focus:text-white
-              ]}
-            >
+              ]}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="currentColor"
@@ -146,61 +156,66 @@ defmodule Probe.Live.Component.Run do
         <% end %>
       </div>
 
-      <div
-        id="macos-instructions"
-        style={(@os in ["Mac OS X"] && "display: block") || "display: none"}
-      >
-        <p class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Copy and paste the command below into your terminal
+      <%= if connected?(@socket) do %>
+        <div class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          <span class="mb-4">Step 1: Choose the port to test:</span>
+          <.form for={%{}} phx-change="port_change" phx-target={@myself}>
+            <div class="w-24 py-2">
+              <.input
+                phx-hook="InitFlowbite"
+                id="run-port"
+                max="65535"
+                min="1"
+                name="port"
+                type="number"
+                value={@port}
+                phx-debounce="250"
+              />
+            </div>
+          </.form>
+        </div>
+
+        <div
+          id="macos-instructions"
+          style={(@os in ["Mac OS X"] && "display: block") || "display: none"}
+        >
+          <p class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            Step 2: Copy and paste the command below into your terminal:
+          </p>
+
+          <.code_block value={"bash <(curl -fsSL #{url(~p"/scripts/unix.sh")}) #{url(~p"/runs/#{@token}")}"} />
+        </div>
+
+        <div
+          id="windows-instructions"
+          style={(@os in ["Windows"] && "display: block") || "display: none"}
+        >
+          <p class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            Step 2: Copy and paste the command below into a PowerShell window:
+          </p>
+
+          <.code_block value={"powershell -command \"& { iwr -useb #{url(~p"/scripts/windows.ps1")} | iex } #{url(~p"/runs/#{@token}")}\""} />
+        </div>
+
+        <div
+          id="linux-instructions"
+          style={(@os in ["Linux", "FreeBSD", "OpenBSD"] && "display: block") || "display: none"}
+        >
+          <p class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            Step 2: Copy and paste the command below into your shell:
+          </p>
+
+          <.code_block value={"bash <(curl -fsSL #{url(~p"/scripts/unix.sh")}) #{url(~p"/runs/#{@token}")}"} />
+        </div>
+
+        <div class="mt-8">
+          <pre class="text-gray-900 dark:text-white"><%= @output %></pre>
+        </div>
+      <% else %>
+        <p class="text-2xl font-bold text-gray-900 dark:text-white">
+          Waiting on WebSocket connection...
         </p>
-
-        <.code_block value={"bash <(curl -fsSL #{url(~p"/scripts/unix.sh")}) #{url(~p"/runs/#{@token}")}"} />
-      </div>
-
-      <div
-        id="windows-instructions"
-        style={(@os in ["Windows"] && "display: block") || "display: none"}
-      >
-        <p class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Copy and paste the command below into a PowerShell window
-        </p>
-
-        <.code_block value={"powershell -command \"& { iwr -useb #{url(~p"/scripts/windows.ps1")} | iex } #{url(~p"/runs/#{@token}")}\""} />
-      </div>
-
-      <div
-        id="linux-instructions"
-        style={(@os in ["Linux", "FreeBSD", "OpenBSD"] && "display: block") || "display: none"}
-      >
-        <p class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Copy and paste the command below into your shell
-        </p>
-
-        <.code_block value={"bash <(curl -fsSL #{url(~p"/scripts/unix.sh")}) #{url(~p"/runs/#{@token}")}"} />
-      </div>
-
-      <div class="mt-8">
-        <%= case @status do %>
-          <% :pending -> %>
-            <p class="text-lg font-semibold text-gray-900 dark:text-white">
-              Waiting to start...
-            </p>
-          <% :started -> %>
-            <p class="text-lg font-semibold text-gray-900 dark:text-white">
-              Started! Running test from IP: <%= :inet.ntoa(@remote_ip) %>
-            </p>
-          <% :completed -> %>
-            <p class="text-lg font-semibold text-gray-900 dark:text-white">
-              Test completed successfully! Duration: <%= @duration / 1000 %> seconds.
-            </p>
-          <% :failed -> %>
-            <p class="text-lg font-semibold text-gray-900 dark:text-white">
-              Test failed. We were unable to establish a WireGuard handshake.
-              <.link navigate="/faq">Learn more</.link>
-              about why this can happen.
-            </p>
-        <% end %>
-      </div>
+      <% end %>
     </div>
     """
   end
@@ -250,5 +265,15 @@ defmodule Probe.Live.Component.Run do
     else
       "dark:bg-gray-800 text-gray-900"
     end
+  end
+
+  def handle_event("port_change", %{"port" => port}, socket) do
+    token =
+      Phoenix.Token.sign(Probe.Endpoint, "topic", %{
+        topic: socket.assigns.topic,
+        port: port
+      })
+
+    {:noreply, assign(socket, token: token, port: port)}
   end
 end

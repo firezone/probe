@@ -21,7 +21,7 @@ defmodule Probe.Controllers.Run do
     # The home page is often custom made,
     # so skip the default app layout.
 
-    with {:ok, %{topic: topic}} <-
+    with {:ok, %{topic: topic, port: port}} <-
            Phoenix.Token.verify(Probe.Endpoint, "topic", token, max_age: 60) do
       Probe.PubSub.broadcast("run:#{topic}", {:started, %{remote_ip: conn.remote_ip}})
 
@@ -33,9 +33,8 @@ defmodule Probe.Controllers.Run do
       end)
 
       # TODO: Start a GenServer to handle the run
-      # TODO: Respond with actual port to connect to
 
-      send_resp(conn, 200, "51820")
+      send_resp(conn, 200, "#{port}")
     else
       _ ->
         send_resp(conn, 401, "invalid or expired token")
@@ -43,15 +42,18 @@ defmodule Probe.Controllers.Run do
   end
 
   def show(conn, %{"token" => token}) do
-    with {:ok, %{topic: topic, start: start_time}} <-
+    with {:ok, %{topic: topic}} <-
            Phoenix.Token.verify(Probe.Endpoint, "topic", token, max_age: :infinity) do
       run = Probe.Runs.fetch_run_by_topic!(topic)
-      duration = DateTime.to_unix(run.updated_at, :millisecond) - start_time
 
       send_resp(conn, 200, ~s"""
-        Started: #{start_time}
-        Duration: #{duration}ms
         Status: #{run.status}
+        Port: #{run.port}
+        Country: #{run.remote_ip_location_country}
+        Latitude: #{run.remote_ip_location_lat}
+        Longitude: #{run.remote_ip_location_lon}
+        Started: #{run.inserted_at}
+        Ended: #{run.updated_at}
       """)
     else
       _ ->

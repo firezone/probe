@@ -48,6 +48,12 @@ let DarkModeToggle = {
   },
 };
 
+let InitFlowbite = {
+  updated() {
+    window.initFlowbite();
+  },
+};
+
 let ResetCopyIcon = {
   mounted() {
     window.addEventListener("delayed-show", function (event) {
@@ -63,4 +69,4 @@ let ResetCopyIcon = {
   },
 };
 
-export { DarkModeToggle, ResetCopyIcon };
+export { DarkModeToggle, ResetCopyIcon, InitFlowbite };
