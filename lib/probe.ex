@@ -27,7 +27,7 @@ defmodule Probe do
     end
   end
 
-  def static_paths, do: ~w(assets fonts images favicon.ico robots.txt)
+  def static_paths, do: ~w(assets fonts images scripts favicon.ico robots.txt)
 
   def router do
     quote do
@@ -94,8 +94,8 @@ defmodule Probe do
       import Phoenix.HTML
       # Core UI components and translation
       import Probe.CoreComponents
-      import Probe.MapComponent
-      import Probe.ListComponent
+      import Probe.MapComponents
+      import Probe.ListComponents
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS

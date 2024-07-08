@@ -1,26 +1,63 @@
 defmodule Probe.Controllers.Run do
   use Probe, :controller
 
+  @run_timeout 10_000
+
   action_fallback Probe.Controllers.Fallback
 
-  def start(conn, _params) do
+  def start(conn, %{"token" => token}) do
     # session_id = Map.get(params, "session_id")
-
-    # {location_region, location_city, {location_lat, location_lon}} =
-    #   get_load_balancer_ip_location(conn)
-
-    # attrs = %{
-    #   remote_ip_location_country: "US",
-    #   remote_ip_location_region: location_region,
-    #   remote_ip_location_city: location_city,
-    #   remote_ip_location_lat: location_lat,
-    #   remote_ip_location_lon: location_lon,
-    #   remote_ip_provider: "AT&T"
-    # }
 
     # The home page is often custom made,
     # so skip the default app layout.
-    render(conn, :home, layout: false)
+
+    with {:ok, %{topic: topic, port: port} = attrs} <-
+           Phoenix.Token.verify(Probe.Endpoint, "topic", token, max_age: 60) do
+      Probe.PubSub.broadcast("run:#{topic}", {:started, %{remote_ip: conn.remote_ip}})
+
+      attrs =
+        Map.merge(attrs, %{
+          remote_ip_location_country: "US",
+          remote_ip_location_region: "California",
+          remote_ip_location_city: "San Francisco",
+          remote_ip_location_lat: "37.7749",
+          remote_ip_location_lon: "-122.4194"
+        })
+
+      {:ok, run} = Probe.Runs.start_run(attrs)
+
+      Task.start(fn ->
+        Process.sleep(@run_timeout)
+
+        run = Probe.Repo.reload(run)
+        Probe.PubSub.broadcast("run:#{topic}", {:failed, %{checks: run.checks}})
+      end)
+
+      send_resp(conn, 200, "#{port}")
+    else
+      _ ->
+        send_resp(conn, 401, "invalid or expired token")
+    end
+  end
+
+  def show(conn, %{"token" => token}) do
+    with {:ok, %{topic: topic}} <-
+           Phoenix.Token.verify(Probe.Endpoint, "topic", token, max_age: :infinity) do
+      run = Probe.Runs.fetch_run_by_topic!(topic)
+
+      send_resp(conn, 200, ~s"""
+        Status: #{run.status}
+        Port: #{run.port}
+        Country: #{run.remote_ip_location_country}
+        Latitude: #{run.remote_ip_location_lat}
+        Longitude: #{run.remote_ip_location_lon}
+        Started: #{run.inserted_at}
+        Ended: #{run.updated_at}
+      """)
+    else
+      _ ->
+        send_resp(conn, 401, "invalid or expired token")
+    end
   end
 
   # defp get_load_balancer_ip_location(%Plug.Conn{} = conn) do

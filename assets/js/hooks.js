@@ -29,7 +29,6 @@ let DarkModeToggle = {
         if (localStorage.getItem("color-theme") === "light") {
           document.documentElement.classList.add("dark");
           localStorage.setItem("color-theme", "dark");
-          console.log("set to dark");
         } else {
           document.documentElement.classList.remove("dark");
           localStorage.setItem("color-theme", "light");
@@ -37,7 +36,6 @@ let DarkModeToggle = {
 
         // if NOT set via local storage previously
       } else {
-        console.log("not found in local storage");
         if (document.documentElement.classList.contains("dark")) {
           document.documentElement.classList.remove("dark");
           localStorage.setItem("color-theme", "light");
@@ -50,4 +48,25 @@ let DarkModeToggle = {
   },
 };
 
-export { DarkModeToggle };
+let InitFlowbite = {
+  updated() {
+    window.initFlowbite();
+  },
+};
+
+let ResetCopyIcon = {
+  mounted() {
+    window.addEventListener("delayed-show", function (event) {
+      setTimeout(() => {
+        event.target.classList.remove("hidden");
+      }, 2000);
+    });
+    window.addEventListener("delayed-hide", function (event) {
+      setTimeout(() => {
+        event.target.classList.add("hidden");
+      }, 2000);
+    });
+  },
+};
+
+export { DarkModeToggle, ResetCopyIcon, InitFlowbite };
