@@ -1,38 +1,37 @@
 defmodule Probe.Controllers.Run do
   use Probe, :controller
 
+  @run_timeout 10_000
+
   action_fallback Probe.Controllers.Fallback
 
   def start(conn, %{"token" => token}) do
     # session_id = Map.get(params, "session_id")
 
-    # {location_region, location_city, {location_lat, location_lon}} =
-    #   get_load_balancer_ip_location(conn)
-
-    # attrs = %{
-    #   remote_ip_location_country: "US",
-    #   remote_ip_location_region: location_region,
-    #   remote_ip_location_city: location_city,
-    #   remote_ip_location_lat: location_lat,
-    #   remote_ip_location_lon: location_lon,
-    #   remote_ip_provider: "AT&T"
-    # }
-
     # The home page is often custom made,
     # so skip the default app layout.
 
-    with {:ok, %{topic: topic, port: port}} <-
+    with {:ok, %{topic: topic, port: port} = attrs} <-
            Phoenix.Token.verify(Probe.Endpoint, "topic", token, max_age: 60) do
       Probe.PubSub.broadcast("run:#{topic}", {:started, %{remote_ip: conn.remote_ip}})
 
+      attrs =
+        Map.merge(attrs, %{
+          remote_ip_location_country: "US",
+          remote_ip_location_region: "California",
+          remote_ip_location_city: "San Francisco",
+          remote_ip_location_lat: "37.7749",
+          remote_ip_location_lon: "-122.4194"
+        })
+
+      {:ok, run} = Probe.Runs.start_run(attrs)
+
       Task.start(fn ->
-        Process.sleep(10_000)
+        Process.sleep(@run_timeout)
 
-        # State machine in Liveview process will prevent going from success -> failed
-        Probe.PubSub.broadcast("run:#{topic}", {:failed})
+        run = Probe.Repo.reload(run)
+        Probe.PubSub.broadcast("run:#{topic}", {:failed, %{checks: run.checks}})
       end)
-
-      # TODO: Start a GenServer to handle the run
 
       send_resp(conn, 200, "#{port}")
     else

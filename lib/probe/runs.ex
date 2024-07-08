@@ -17,13 +17,13 @@ defmodule Probe.Runs do
   end
 
   def start_run(attrs) do
-    checks =
-      Ecto.Enum.values(Check, :adapter)
-      |> Enum.map(&Check.changeset(%{adapter: &1}))
+    # checks =
+    #   Ecto.Enum.values(Check, :adapter)
+    #   |> Enum.map(&Check.changeset(%{adapter: &1}))
 
     %Run{}
     |> Run.changeset(attrs)
-    |> Ecto.Changeset.put_assoc(:checks, checks)
+    # |> Ecto.Changeset.put_assoc(:checks, checks)
     |> Repo.insert()
   end
 
@@ -60,7 +60,6 @@ defmodule Probe.Runs do
   def fetch_run_by_topic!(topic) do
     from(run in Run, as: :runs)
     |> where([runs: runs], runs.topic == ^topic)
-    |> preload(:checks)
     |> Repo.one!()
   end
 

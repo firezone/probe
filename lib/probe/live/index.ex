@@ -80,8 +80,6 @@ defmodule Probe.Live.Index do
       <main class="dark:bg-gray-900 flex-1 p-4 space-y-4">
         <%= if @live_action == :run do %>
           <.live_component module={Probe.Live.Component.Run} id="run" os={@os} output={@output} />
-        <% else %>
-          Waiting on WebSocket connection...
         <% end %>
         <%= if @live_action in [:results_map, :results_table] do %>
           <.live_component module={Probe.Live.Component.Results} id="results" />
@@ -125,28 +123,82 @@ defmodule Probe.Live.Index do
     {:noreply,
      assign(socket,
        status: :started,
-       output: socket.assigns.output <> "\n\nTest started! Remote IP: #{:inet.ntoa(remote_ip)}"
+       output:
+         socket.assigns.output <>
+           "\n\nTest started! Remote IP: #{:inet.ntoa(remote_ip)}"
      )}
   end
 
-  def handle_info({:completed}, socket) do
-    if socket.assigns.status not in [:pending, :failed] do
+  def handle_info({:handshake_intiation, %{checks: checks}}, socket) do
+    {:noreply,
+     assign(socket,
+       checks: checks,
+       output:
+         socket.assigns.output <>
+           "\n\nHandshake initiation received!"
+     )}
+  end
+
+  def handle_info({:handshake_response, %{checks: checks}}, socket) do
+    {:noreply,
+     assign(socket,
+       checks: checks,
+       output:
+         socket.assigns.output <>
+           "\n\nHandshake response received!"
+     )}
+  end
+
+  def handle_info({:cookie_reply, %{checks: checks}}, socket) do
+    {:noreply,
+     assign(socket,
+       checks: checks,
+       output:
+         socket.assigns.output <>
+           "\n\nCookie reply received!"
+     )}
+  end
+
+  def handle_info({:data_message, %{checks: checks}}, socket) do
+    {:noreply,
+     assign(socket,
+       checks: checks,
+       output:
+         socket.assigns.output <>
+           "\n\nData message received!"
+     )}
+  end
+
+  def handle_info({:completed, %{checks: checks}}, socket) do
+    if socket.assigns.status not in [:pending, :failed] &&
+         Enum.all?(Map.values(socket.assigns.checks)) do
       {:noreply,
        assign(socket,
          status: :completed,
-         output: socket.assigns.output <> "\n\nTest completed successfully!"
+         output: socket.assigns.output <> "\n\nTest completed successfully! All checks passed."
        )}
     else
-      {:noreply, socket}
+      fail(socket, checks)
     end
   end
 
-  def handle_info({:failed}, socket) do
+  def handle_info({:failed, %{checks: checks}}, socket) do
     if socket.assigns.status not in [:pending, :completed] do
-      {:noreply,
-       assign(socket, status: :failed, output: socket.assigns.output <> "\n\nTest failed!")}
+      fail(socket, checks)
     else
-      {:noreply, socket}
+      {:error, "can't transition from #{socket.assigns.status} to failed"}
     end
+  end
+
+  defp fail(socket, checks) do
+    output =
+      socket.assigns.output <>
+        """
+        \n
+        Test failed! Some checks did not pass:
+        #{inspect(checks)}
+        """
+
+    {:noreply, assign(socket, status: :failed, output: output)}
   end
 end
