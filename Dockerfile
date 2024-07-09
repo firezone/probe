@@ -7,13 +7,13 @@
 # This file is based on these images:
 #
 #   - https://hub.docker.com/r/hexpm/elixir/tags - for the build image
-#   - https://hub.docker.com/_/debian?tab=tags&page=1&name=bullseye-20240513-slim - for the release image
+#   - https://hub.docker.com/_/debian?tab=tags&page=1&name=bullseye-20240701-slim - for the release image
 #   - https://pkgs.org/ - resource for finding needed packages
-#   - Ex: hexpm/elixir:1.16.3-erlang-26.2.5-debian-bullseye-20240513-slim
+#   - Ex: hexpm/elixir:1.16.3-erlang-26.2.5-debian-bullseye-20240701-slim
 #
-ARG ELIXIR_VERSION=1.71.1
+ARG ELIXIR_VERSION=1.17.2
 ARG OTP_VERSION=27.0
-ARG DEBIAN_VERSION=bullseye-20240513-slim
+ARG DEBIAN_VERSION=bullseye-20240701-slim
 
 ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
 ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
@@ -21,8 +21,16 @@ ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
 FROM ${BUILDER_IMAGE} as builder
 
 # install build dependencies
-RUN apt-get update -y && apt-get install -y build-essential git \
+RUN apt-get update -y && apt-get install -y build-essential git curl \
   && apt-get clean && rm -f /var/lib/apt/lists/*_*
+
+RUN curl -sL https://deb.nodesource.com/setup_22.x | bash - \
+  && apt-get update -y \
+  && apt-get install -y nodejs \
+  && apt-get clean && rm -f /var/lib/apt/lists/*_*
+
+# install pnpm
+RUN npm i -g pnpm
 
 # prepare build dir
 WORKDIR /app
@@ -46,12 +54,11 @@ COPY config/config.exs config/${MIX_ENV}.exs config/
 RUN mix deps.compile
 
 COPY priv priv
-
 COPY lib lib
-
 COPY assets assets
 
 # compile assets
+RUN cd assets && pnpm install
 RUN mix assets.deploy
 
 # Compile the release
@@ -63,6 +70,14 @@ COPY config/runtime.exs config/
 COPY rel rel
 RUN mix release
 
+FROM ghcr.io/maxmind/geoipupdate:v7.0.1 as geoip
+
+# Copy the GeoIP Lite database
+ARG GEOIPUPDATE_ACCOUNT_ID=931220
+ARG GEOIPUPDATE_LICENSE_KEY=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
+ARG GEOIPUPDATE_EDITION_IDS=GeoLite2-Country GeoLite2-City
+RUN geoipupdate -v -d /usr/local/share/GeoIP
+
 # start a new build stage so that the final image will only contain
 # the compiled release and other runtime necessities
 FROM ${RUNNER_IMAGE}
@@ -70,6 +85,9 @@ FROM ${RUNNER_IMAGE}
 RUN apt-get update -y \
   && apt-get install -y libstdc++6 openssl libncurses5 locales ca-certificates tini \
   && apt-get clean && rm -f /var/lib/apt/lists/*_*
+
+# Copy the GeoIP Lite database
+COPY --from=geoip /usr/local/share/GeoIP /usr/local/share/GeoIP
 
 # Set the locale
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
@@ -89,5 +107,5 @@ COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/probe ./
 
 USER nobody
 
-ENTRYPOINT ["/tini", "--"]
+ENTRYPOINT ["tini", "--"]
 CMD ["/app/bin/server"]

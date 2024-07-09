@@ -34,13 +34,8 @@ soft_limit = 1000
 internal_port = 51820
 protocol = "udp"
 [[services.ports]]
-port = 51820
-
-[[services]]
-internal_port = 51821
-protocol = "udp"
-[[services.ports]]
-port = 143
+start_port = 9000
+end_port = 65535
 
 [[vm]]
 memory = '1gb'
