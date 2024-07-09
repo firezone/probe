@@ -118,7 +118,7 @@ defmodule Probe.Live.Component.Run do
                 bg-white
                 border
                 border-gray-200
-                rounded-e-lg 
+                rounded-e-lg
                 hover:bg-gray-100
                 hover:text-blue-700
                 focus:z-10
@@ -183,7 +183,7 @@ defmodule Probe.Live.Component.Run do
             Step 2: Copy and paste the command below into your terminal:
           </p>
 
-          <.code_block value={"bash <(curl -fsSL #{url(~p"/scripts/unix.sh")}) #{url(~p"/runs/#{@token}")}"} />
+          <.code_block value={"bash <(curl -fsSL \"#{url(~p"/scripts/unix.sh")}\") #{url(~p"/runs/#{@token}")}"} />
         </div>
 
         <div
@@ -205,7 +205,7 @@ defmodule Probe.Live.Component.Run do
             Step 2: Copy and paste the command below into your shell:
           </p>
 
-          <.code_block value={"bash <(curl -fsSL #{url(~p"/scripts/unix.sh")}) #{url(~p"/runs/#{@token}")}"} />
+          <.code_block value={"bash <(curl -fsSL \"#{url(~p"/scripts/unix.sh")}\") #{url(~p"/runs/#{@token}")}"} />
         </div>
 
         <div class="mt-8">
