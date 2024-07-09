@@ -23,8 +23,16 @@
       }
     </script>
   </head>
-  <body class="h-full">
-    <div class="flex w-full flex-col">
+  <body class="h-full bg-gray-50 dark:bg-slate-900">
+      <nav class="p-4">
+        <div id="logo" class="fixed top-2 left-2 w-64 h-24 bg-logo-light dark:bg-logo-dark bg-no-repeat">
+        </div>
+        <div class="w-full h-10 flex justify-center items-baseline">
+          <h1 class="text-4xl text-gray-900 font-semibold dark:text-white">Check WireGuard connectivity</h1>
+          <span class="ml-1 text-sm text-gray-900 dark:text-white">(no WireGuard client required!)</span>
+        </div>
+      </nav>
+    <div class="mt-8 flex w-full flex-col">
       <%= @inner_content %>
     </div>
     <footer class="p-4 bg-slate-900">
