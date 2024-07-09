@@ -7,9 +7,7 @@ defmodule Probe.RunsRun do
       assert {:error, %Ecto.Changeset{} = changeset} = start_run(%{})
 
       assert errors_on(changeset) == %{
-               remote_ip_location_country: ["can't be blank"],
-               remote_ip_location_lat: ["can't be blank"],
-               remote_ip_location_lon: ["can't be blank"]
+               remote_ip_location_country: ["can't be blank"]
              }
     end
 
@@ -31,7 +29,7 @@ defmodule Probe.RunsRun do
 
       assert {:ok, %Probe.Runs.Run{} = run} = start_run(attrs)
 
-      assert length(run.checks) == 4
+      assert Enum.count(run.checks) == 4
 
       assert Enum.map(run.checks, & &1.adapter) == [
                :vanilla,

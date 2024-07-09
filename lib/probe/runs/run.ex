@@ -41,8 +41,6 @@ defmodule Probe.Runs.Run do
     ])
     |> validate_required([
       :remote_ip_location_country,
-      :remote_ip_location_lat,
-      :remote_ip_location_lon,
       :topic,
       :port,
       :checks

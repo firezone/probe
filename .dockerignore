@@ -39,6 +39,9 @@
 # Generated on crash by the VM
 erl_crash.dump
 
+# Fly.io deploy artifacts
+raw/
+
 # Static artifacts - These should be fetched and built inside the Docker image
 /assets/node_modules/
 /priv/static/assets/

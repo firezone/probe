@@ -15,13 +15,16 @@ defmodule Probe.Controllers.Run do
            Phoenix.Token.verify(Probe.Endpoint, "topic", token, max_age: 60) do
       Probe.PubSub.broadcast("run:#{topic}", {:started, %{remote_ip: conn.remote_ip}})
 
+      {city, region, country, latitude, longitude, provider} = get_remote_ip_location(conn)
+
       attrs =
         Map.merge(attrs, %{
-          remote_ip_location_country: "US",
-          remote_ip_location_region: "California",
-          remote_ip_location_city: "San Francisco",
-          remote_ip_location_lat: "37.7749",
-          remote_ip_location_lon: "-122.4194"
+          remote_ip_location_country: country,
+          remote_ip_location_region: region,
+          remote_ip_location_city: city,
+          remote_ip_location_lat: latitude,
+          remote_ip_location_lon: longitude,
+          remote_ip_provider: provider
         })
 
       {:ok, run} = Probe.Runs.start_run(attrs)
@@ -38,6 +41,17 @@ defmodule Probe.Controllers.Run do
       _ ->
         send_resp(conn, 401, "invalid or expired token")
     end
+  end
+
+  defp get_remote_ip_location(conn) do
+    result = Geolix.lookup(conn.remote_ip, [])
+    region = get_in(result, [:city, :continent, :name])
+    country = get_in(result, [:city, :country, :iso_code]) || "Unknown"
+    city = get_in(result, [:city, :city, :name])
+    latitude = get_in(result, [:city, :location, :latitude])
+    longitude = get_in(result, [:city, :location, :longitude])
+    provider = get_in(result, [:asn, :autonomous_system_organization])
+    {city, region, country, latitude, longitude, provider}
   end
 
   def show(conn, %{"token" => token}) do

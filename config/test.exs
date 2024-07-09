@@ -29,3 +29,48 @@ config :phoenix, :plug_init_mode, :runtime
 config :phoenix_live_view,
   # Enable helpful, but potentially expensive runtime checks
   enable_expensive_runtime_checks: true
+
+config :geolix,
+  databases: [
+    %{
+      id: :city,
+      adapter: Geolix.Adapter.Fake,
+      data: %{
+        {127, 0, 0, 1} => %{
+          city: %{
+            name: "Mérida"
+          },
+          continent: %{
+            code: "NA",
+            name: "North America"
+          },
+          country: %{
+            iso_code: "MX",
+            name: "Mexico"
+          },
+          location: %{
+            latitude: 1.0,
+            longitude: -1.0
+          },
+          registered_country: %{
+            iso_code: "MX",
+            name: "Mexico"
+          },
+          traits: %{
+            ip_address: {127, 0, 0, 1}
+          }
+        }
+      }
+    },
+    %{
+      id: :asn,
+      adapter: Geolix.Adapter.Fake,
+      data: %{
+        {127, 0, 0, 1} => %{
+          autonomous_system_number: 17072,
+          autonomous_system_organization: "TOTAL PLAY TELECOMUNICACIONES SA DE CV",
+          ip_address: {127, 0, 0, 1}
+        }
+      }
+    }
+  ]

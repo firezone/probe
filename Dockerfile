@@ -75,7 +75,7 @@ FROM ghcr.io/maxmind/geoipupdate:v7.0.1 as geoip
 # Copy the GeoIP Lite database
 ARG GEOIPUPDATE_ACCOUNT_ID=931220
 ARG GEOIPUPDATE_LICENSE_KEY=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
-ARG GEOIPUPDATE_EDITION_IDS=GeoLite2-Country GeoLite2-City
+ARG GEOIPUPDATE_EDITION_IDS="GeoLite2-City GeoLite2-Country GeoLite2-ASN"
 RUN geoipupdate -v -d /usr/local/share/GeoIP
 
 # start a new build stage so that the final image will only contain

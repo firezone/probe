@@ -68,6 +68,10 @@ defmodule Probe.MixProject do
       {:jason, "~> 1.2"},
       {:ua_parser, "~> 1.9"},
 
+      # GeoIP Database
+      {:geolix, "~> 2.0"},
+      {:geolix_adapter_mmdb2, "~> 0.6.0"},
+
       # Tests
       {:floki, ">= 0.30.0", only: :test}
     ]

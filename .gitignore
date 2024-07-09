@@ -37,3 +37,6 @@ npm-debug.log
 
 # Ignore Fly.io deploy artifacts
 raw/
+
+# Local copies of GeoLite2 databases
+/priv/geoip/
