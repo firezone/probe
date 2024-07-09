@@ -22,7 +22,7 @@ module.exports = {
     extend: {
       backgroundImage: {
         "logo-light": "url('/images/probe-logo-light.svg')",
-        "logo-dark": "url('/images/probe-logo-light.svg')",
+        "logo-dark": "url('/images/probe-logo-dark.svg')",
       },
       colors: {
         brand: "#FD4F00",
