@@ -13,7 +13,7 @@ kill_signal = 'SIGTERM'
 release_command = '/app/bin/migrate'
 
 [env]
-PHX_HOST = 'probe.fly.dev'
+PHX_HOST = 'probe.sh'
 PORT = '8080'
 
 [http_service]

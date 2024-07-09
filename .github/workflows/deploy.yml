@@ -1,0 +1,22 @@
+name: Deploy to Fly.io
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    concurrency: deploy-group
+    environment: Fly.io Production
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Fly CLI
+      uses: superfly/flyctl-actions/setup-flyctl@master
+    - name: Deploy to Fly
+      run: flyctl deploy --remote-only --build-secret GEOIPUPDATE_LICENSE_KEY=${{ secrets.GEOIPUPDATE_LICENSE_KEY }}
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
