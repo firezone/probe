@@ -14,11 +14,10 @@ defmodule Probe.Live.Index do
   def render(assigns) do
     ~H"""
     <div>
-      <div class="flex items-center">
-        <div
-          id="logo"
-          class="w-1/3 m-4 w-48 h-16 min-w-32 bg-contain bg-logo-light dark:bg-logo-dark bg-no-repeat"
-        />
+      <div class="w-full flex items-center">
+        <div class="w-1/3">
+          <div class="m-4 w-48 h-16 min-w-32 bg-contain bg-logo-light dark:bg-logo-dark bg-no-repeat" />
+        </div>
         <div class="w-1/3 justify-center items-center bg-gray-50 dark:bg-gray-900 py-5 flex">
           <nav
             id="toggleMobileMenu"

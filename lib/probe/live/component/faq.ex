@@ -44,9 +44,25 @@ defmodule Probe.Live.Component.Faq do
           </p>
         </li>
         <li>
+          <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            What data do you collect?
+          </p>
+          <p class="text-gray-600 dark:text-gray-400">
+            We care deeply about user privacy. No IP addresses or personal data is collected
+            when you use the Probe service. We collect anonymized, aggregated statistics related
+            to each test that consists of the following:
+            <ul class="list-disc list-inside m-4 text-gray-600 dark:text-gray-400">
+              <li>Test result for each WireGuard message type</li>
+              <li>Timestamp</li>
+              <li>IP location</li>
+              <li>Your ISP</li>
+            </ul>
+          </p>
+        </li>
+        <li>
           <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">Who built it?</p>
           <p class="text-gray-600 dark:text-gray-400">
-            Probe was built by same team that builds <.link
+            Probe was built by the team behind <.link
               navigate="https://www.firezone.dev?utm_source=probe"
               class="text-blue-600 dark:text-blue-400 hover:no-underline underline"
               target="_blank"
@@ -58,7 +74,9 @@ defmodule Probe.Live.Component.Faq do
             Why did you build this?
           </p>
           <p class="text-gray-600 dark:text-gray-400">
-            We think WireGuard's great, and we'd
+            We built Probe to help users test their WireGuard connections and to help us
+            understand how WireGuard is being blocked around the world. Our goal is to share
+            this data with the community to help users troubleshoot WireGuard connectivity issues.
           </p>
         </li>
         <li>
@@ -80,7 +98,26 @@ defmodule Probe.Live.Component.Faq do
               navigate="https://www.firezone.dev?utm_source=probe"
               class="text-blue-600 dark:text-blue-400 hover:no-underline underline"
               target="_blank"
-            >open a GitHub issue</.link>.
+            >open a GitHub issue</.link>. If you think you've found a security vulnerability,
+            please <.link
+              navigate="https://www.github.com/firezone/probe/security/advisories/new"
+              class="text-blue-600 dark:text-blue-400 hover:no-underline underline"
+            >
+              open a security advisory on GitHub
+            </.link>.
+          </p>
+        </li>
+        <li>
+          <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            How do you locate my IP address?
+          </p>
+          <p class="text-gray-600 dark:text-gray-400">
+            Probe uses GeoLite2 data created by MaxMind, available from <.link
+              navigate="https://www.maxmind.com"
+              class="text-blue-600 dark:text-blue-400 hover:no-underline underline"
+              target="_blank"
+            >
+                MaxMind</.link>.
           </p>
         </li>
       </ul>
