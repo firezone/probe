@@ -80,7 +80,7 @@ defmodule Probe.Live.Index do
           </button>
         </div>
       </div>
-      <div class="pt-10 pb-24">
+      <div class="pb-24">
         <main class="dark:bg-gray-900 flex-1 p-4 space-y-4">
           <%= if @live_action == :run do %>
             <.live_component module={Probe.Live.Component.Run} id="run" os={@os} output={@output} />

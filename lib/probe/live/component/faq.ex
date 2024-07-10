@@ -60,6 +60,14 @@ defmodule Probe.Live.Component.Faq do
           </p>
         </li>
         <li>
+          <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            Does probe support IPv6?
+          </p>
+          <p class="text-gray-600 dark:text-gray-400">
+            Unfortunately not yet. We will support IPv6 when Fly.io supports public IPv6 routing for UDP.
+          </p>
+        </li>
+        <li>
           <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">Who built it?</p>
           <p class="text-gray-600 dark:text-gray-400">
             Probe was built by the team behind <.link
