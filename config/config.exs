@@ -34,7 +34,10 @@ config :probe, Probe.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
-    formats: [html: Probe.ErrorHTML, json: Probe.ErrorJSON],
+    formats: [
+      html: Probe.Controllers.ErrorHTML,
+      json: Probe.Controllers.ErrorJSON
+    ],
     layout: false
   ],
   pubsub_server: Probe.PubSub,

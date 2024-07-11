@@ -18,11 +18,6 @@ defmodule Probe.Router do
     post "/runs/:token/cancel", Probe.Controllers.Run, :cancel
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", Probe do
-  #   pipe_through :api
-  # end
-
   scope "/", Probe do
     pipe_through :browser
 
