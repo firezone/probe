@@ -18,7 +18,7 @@ defmodule Probe.Live.Index do
 
   def render(assigns) do
     ~H"""
-    <div>
+    <div class="p-4">
       <div class="w-full flex items-center">
         <div class="hidden md:flex md:w-1/3">
           <div class="m-4 w-48 h-16 min-w-24 bg-contain bg-logo-light dark:bg-logo-dark bg-no-repeat" />

@@ -1,6 +1,8 @@
 defmodule Probe.ListComponents do
   use Phoenix.Component
 
+  attr :stats, :list
+
   def results_table(assigns) do
     ~H"""
     <div class="relative overflow-x-auto">
@@ -19,16 +21,16 @@ defmodule Probe.ListComponents do
           </tr>
         </thead>
         <tbody>
-          <%= for %{country_code: country_code, rate: rate, num: num} <- @results do %>
+          <%= for stat <- @stats do %>
             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
               <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                <%= country_code %>
+                <%= stat.country %>
               </td>
               <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                <%= num %>
+                <%= stat.num_runs %>
               </td>
               <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                <%= rate %>
+                <%= stat.num_succeeded * 100 / stat.num_runs %>%
               </td>
             </tr>
           <% end %>

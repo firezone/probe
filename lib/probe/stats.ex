@@ -2,25 +2,31 @@ defmodule Probe.Stats do
   import Ecto.Query
   alias Probe.Stats.{CountryStats, RegionStats, CityStats, ProviderStats}
 
+  def country_stats do
+    from(s in CountryStats, order_by: [asc: :country])
+    |> Probe.Repo.all()
+  end
+
   def upsert(%Probe.Runs.Run{} = run) do
     num_succeeded = num_succeeded_incrementer(run.checks)
 
     [
-      {CountryStats, :country},
-      {RegionStats, :region},
-      {CityStats, :city},
-      {ProviderStats, :provider}
+      {CountryStats, :country, run.remote_ip_location_country},
+      {RegionStats, :region, run.remote_ip_location_region},
+      {CityStats, :city, run.remote_ip_location_city},
+      {ProviderStats, :provider, run.remote_ip_provider}
     ]
-    |> Enum.map(fn {schema, key} -> upsert_stats(schema, key, num_succeeded) end)
+    |> Enum.map(fn {schema, key, val} -> upsert_stats(schema, key, val, num_succeeded) end)
   end
 
-  defp upsert_stats(schema, key, num_succeeded) do
-    changeset = schema.changeset(%{num_succeeded: num_succeeded})
+  defp upsert_stats(schema, key, val, num_succeeded) do
+    changeset = schema.changeset(%{key => val, num_runs: 1, num_succeeded: num_succeeded})
 
-    Probe.Repo.insert(changeset,
-      on_conflict: on_conflict_query(schema),
-      conflict_target: [key]
-    )
+    {:ok, _stat} =
+      Probe.Repo.insert(changeset,
+        on_conflict: on_conflict_query(schema),
+        conflict_target: [key]
+      )
   end
 
   defp num_succeeded_incrementer(%{

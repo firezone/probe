@@ -1,18 +1,24 @@
 defmodule Probe.Live.Component.Results do
   use Probe, :live_component
-
-  @results [
-    %{country_code: "us", rate: 0.986, num: 100},
-    %{country_code: "ca", rate: 0.987, num: 100}
-  ]
+  alias Probe.Stats
 
   def mount(socket) do
-    {:ok, assign(socket, :results, @results)}
+    if connected?(socket) do
+      stats = Stats.country_stats()
+      {:ok, assign(socket, :stats, stats)}
+    else
+      {:ok, assign(socket, :stats, nil)}
+    end
   end
 
   def render(assigns) do
     ~H"""
-    <div class="max-w-screen-lg mx-auto">
+    <div class="max-w-screen-xl mx-auto">
+      <div class="flex justify-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 dark:text-gray-200">
+          Global WireGuard connectivity results
+        </h1>
+      </div>
       <div class="flex w-full justify-center mb-8">
         <div class="inline-flex rounded-md shadow-sm" role="group">
           <button phx-target={@myself} phx-click={show_map()} id="map-btn" type="button" class={~w[
@@ -76,13 +82,19 @@ defmodule Probe.Live.Component.Results do
         </div>
       </div>
 
-      <div id="results-map">
-        <.results_map results={@results} />
-      </div>
+      <%= if @stats do %>
+        <div id="results-map">
+          <.results_map stats={@stats} />
+        </div>
 
-      <div id="results-list" class="hidden">
-        <.results_table results={@results} />
-      </div>
+        <div id="results-list" class="hidden">
+          <.results_table stats={@stats} />
+        </div>
+      <% else %>
+        <div class="flex justify-center">
+          <p class="text-gray-500 dark:text-gray-400">Loading...</p>
+        </div>
+      <% end %>
     </div>
     """
   end

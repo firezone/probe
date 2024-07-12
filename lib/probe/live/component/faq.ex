@@ -3,7 +3,7 @@ defmodule Probe.Live.Component.Faq do
 
   def render(assigns) do
     ~H"""
-    <div class="max-w-screen-sm mx-auto">
+    <div class="max-w-screen-md mx-auto">
       <h1 class="text-4xl font-bold text-gray-800 dark:text-gray-200">FAQ</h1>
       <p class="text-gray-600 dark:text-gray-400 mt-4">
         All the things you wanted to know about Probe, and maybe even a few you didn't.
@@ -107,7 +107,10 @@ defmodule Probe.Live.Component.Faq do
               navigate="https://www.firezone.dev?utm_source=probe"
               class="text-blue-600 dark:text-blue-400 hover:no-underline underline"
               target="_blank"
-            >open a GitHub issue</.link>. If you think you've found a security vulnerability,
+            >open a GitHub issue</.link>.
+          </p>
+          <p class="text-gray-600 dark:text-gray-400">
+            If you think you've found a security vulnerability,
             please <.link
               navigate="https://www.github.com/firezone/probe/security/advisories/new"
               class="text-blue-600 dark:text-blue-400 hover:no-underline underline"
@@ -121,7 +124,7 @@ defmodule Probe.Live.Component.Faq do
             How do you locate my IP address?
           </p>
           <p class="text-gray-600 dark:text-gray-400">
-            Probe uses GeoLite2 data created by MaxMind, available from <.link
+            Probe uses GeoLite2 data created by <.link
               navigate="https://www.maxmind.com"
               class="text-blue-600 dark:text-blue-400 hover:no-underline underline"
               target="_blank"
