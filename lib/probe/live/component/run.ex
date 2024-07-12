@@ -14,12 +14,16 @@ defmodule Probe.Live.Component.Run do
           port: @default_port
         })
 
+      port_options =
+        Application.fetch_env!(:probe, :port_options)
+        |> Enum.map(fn {name, {external_port, _internal_port}} -> {name, external_port} end)
+
       {:ok,
        assign(socket,
          token: token,
          topic: topic,
          default_port: @default_port,
-         port_options: Application.fetch_env!(:probe, :port_options)
+         port_options: port_options
        )}
     else
       {:ok, socket}
