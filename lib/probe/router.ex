@@ -13,7 +13,9 @@ defmodule Probe.Router do
   pipeline :api do
     plug :accepts, ["text"]
 
-    post "/runs/:token", Probe.Controllers.Run, :start
+    post "/runs/:token/start", Probe.Controllers.Run, :start
+    post "/runs/:token/complete", Probe.Controllers.Run, :complete
+    post "/runs/:token/cancel", Probe.Controllers.Run, :cancel
   end
 
   # Other scopes may use custom stacks.

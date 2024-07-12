@@ -53,6 +53,25 @@ if config_env() == :prod do
 
   config :probe, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
+  # Fly requires listening on the IP address of "fly-global-services"
+  # See https://fly.io/docs/networking/udp-and-tcp/
+  {:ok, addr} = :inet.getaddr(~c"fly-global-services", :inet)
+
+  config :probe,
+    udp_bind_address: addr,
+    port_options: [
+      {"53 (DNS)", 53},
+      {"80 (HTTP)", 80},
+      {"123 (NTP)", 123},
+      {"161 (SNMP)", 161},
+      {"443 (HTTPS)", 443},
+      {"500 (IKE)", 500},
+      {"514 (Syslog)", 514},
+      {"1701 (L2TP)", 1701},
+      {"51820 (WireGuard)", 51_820},
+      {"60000", 60_000}
+    ]
+
   config :probe, Probe.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [

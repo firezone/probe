@@ -9,7 +9,21 @@ import Config
 
 config :probe,
   ecto_repos: [Probe.Repo],
-  generators: [timestamp_type: :utc_datetime, binary_id: true]
+  generators: [timestamp_type: :utc_datetime, binary_id: true],
+  udp_bind_address: {127, 0, 0, 1},
+  port_options: [
+    # Needs root to run. These are enabled on Fly for prod.
+    # {"53 (DNS)", 53},
+    # {"80 (HTTP)", 80},
+    # {"123 (NTP)", 123},
+    # {"161 (SNMP)", 161},
+    # {"443 (HTTPS)", 443},
+    # {"500 (IKE)", 500},
+    # {"514 (Syslog)", 514},
+    {"1701 (L2TP)", 1701},
+    {"51820 (WireGuard)", 51_820},
+    {"60000", 60_000}
+  ]
 
 config :probe, Probe.Repo,
   migration_timestamps: [type: :timestamptz],

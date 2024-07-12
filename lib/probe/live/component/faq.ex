@@ -55,7 +55,7 @@ defmodule Probe.Live.Component.Faq do
               <li>Test result for each WireGuard message type</li>
               <li>Timestamp</li>
               <li>IP location</li>
-              <li>Your ISP</li>
+              <li>Name of your ISP</li>
             </ul>
           </p>
         </li>
