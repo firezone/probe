@@ -18,22 +18,24 @@ trap cancel EXIT
 # Function to send payloads
 send_payload() {
     payload=$1
+    echo $host
+    echo $port
     for i in 1 2 3; do
-        echo -n "$payload" | base64 -d | nc -u -w 0 $host $port
+        echo "$payload" | base64 -d | nc -u -w 0 "$host" "$port"
     done
 }
 
 # Fetch the port and payloads to test with
-init_data=$(curl -4 -fsSL -H 'Accept: text/plain' -XPOST "$1/start")
+init_data=$(curl --fail -4 -fsSL -H 'Accept: text/plain' -XPOST "$1/start")
 
 # Parse space-delimited input
 set -- $init_data
-port=$1
-host=$2
-hs_init=$3
-hs_response=$4
-cookie_reply=$5
-data_message=$6
+port="$1"
+host="$2"
+hs_init="$3"
+hs_response="$4"
+cookie_reply="$5"
+data_message="$6"
 
 if [ -z "$port" ]; then
     echo "Failed to get a valid port from $run_url"
@@ -57,4 +59,4 @@ sleep 1
 
 curl -4 -fsSL -H 'Accept: text/plain' -XPOST "$run_url/complete"
 
-echo "Done! Test completed succesfully. View this result at $run_url"
+echo "Done! Test completed. View your results at $run_url"
