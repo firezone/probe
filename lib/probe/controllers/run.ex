@@ -64,14 +64,22 @@ defmodule Probe.Controllers.Run do
   end
 
   defp get_remote_ip_location(conn) do
-    result = Geolix.lookup(conn.remote_ip, [])
-    region = get_in(result, [:city, :continent, :name])
-    country = get_in(result, [:city, :country, :iso_code]) || "Unknown"
-    city = get_in(result, [:city, :city, :name])
-    latitude = get_in(result, [:city, :location, :latitude])
-    longitude = get_in(result, [:city, :location, :longitude])
-    provider = get_in(result, [:asn, :autonomous_system_organization])
+    remote_ip = get_client_ip(conn)
+    result = Geolix.lookup(remote_ip, [])
+    region = get_in(result.city.continent.name)
+    country = get_in(result.city.country.iso_code) || "Unknown"
+    city = get_in(result.city.city.name)
+    latitude = get_in(result.city.location.latitude)
+    longitude = get_in(result.city.location.longitude)
+    provider = get_in(result.asn.autonomous_system_organization)
     {city, region, country, latitude, longitude, provider}
+  end
+
+  defp get_client_ip(conn) do
+    case Plug.Conn.get_req_header(conn, "fly-client-ip") do
+      [ip | _] -> ip
+      [] -> conn.remote_ip
+    end
   end
 
   def show(conn, %{"token" => token}) do
