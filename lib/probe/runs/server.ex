@@ -11,7 +11,11 @@ defmodule Probe.Runs.Server do
     adapter = Keyword.fetch!(opts, :adapter)
     adapter_config = Keyword.get(opts, :adapter_config, [])
 
-    {:ok, socket} = :gen_udp.open(port, [:binary, {:active, true}, {:reuseaddr, true}])
+    # Fly requires listening on the IP address of "fly-global-services"
+    # See https://fly.io/docs/networking/udp-and-tcp/
+    {:ok, addr} = :inet.getaddr(~c"fly-global-services", :inet)
+
+    {:ok, socket} = :gen_udp.open(port, [:binary, {:active, true}, {:ip, addr}])
     {:ok, %{socket: socket, adapter: adapter, adapter_config: adapter_config}}
   end
 

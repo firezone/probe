@@ -6,10 +6,6 @@ defmodule Probe.Live.Component.Run do
   def mount(socket) do
     if connected?(socket) do
       topic = :crypto.strong_rand_bytes(8) |> Base.url_encode64(padding: false)
-
-      # FYI: Comoponents don't have their process -- this binds the parent LiveView PID
-      # to the topic, so that's where our handle_info's are. This is here for the sake of
-      # encapsulation and to prevent the LiveView from having to know about the PubSub topic.
       :ok = Probe.PubSub.subscribe("run:#{topic}")
 
       token =
@@ -22,7 +18,8 @@ defmodule Probe.Live.Component.Run do
        assign(socket,
          token: token,
          topic: topic,
-         port: @default_port
+         default_port: @default_port,
+         port_options: Application.fetch_env!(:probe, :port_options)
        )}
     else
       {:ok, socket}
@@ -157,20 +154,24 @@ defmodule Probe.Live.Component.Run do
       </div>
 
       <%= if connected?(@socket) do %>
-        <div class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          <span class="mb-4">Step 1: Choose the port to test:</span>
+        <div class="text-xl font-semibold mb-4">
+          <span class="mb-4 text-gray-900 dark:text-white">Step 1: Choose a port:</span>
           <.form for={%{}} phx-change="port_change" phx-target={@myself}>
-            <div class="w-24 py-2">
-              <.input
-                phx-hook="InitFlowbite"
-                id="run-port"
-                max="65535"
-                min="1"
-                name="port"
-                type="number"
-                value={@port}
-                phx-debounce="250"
-              />
+            <div class="py-2">
+              <div class="w-64">
+                <.input
+                  phx-hook="InitFlowbite"
+                  id="run-port"
+                  name="port"
+                  type="select"
+                  options={@port_options}
+                  value={@default_port}
+                  phx-debounce="250"
+                />
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                Select a different port if you suspect WireGuard's default port is blocked.
+              </p>
             </div>
           </.form>
         </div>
@@ -180,7 +181,7 @@ defmodule Probe.Live.Component.Run do
           style={(@os in ["Mac OS X"] && "display: block") || "display: none"}
         >
           <p class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Step 2: Copy and paste the command below into your terminal:
+            Step 2: Run this command:
           </p>
 
           <.code_block value={"bash <(curl -fsSL \"#{url(~p"/scripts/unix.sh")}\") #{url(~p"/runs/#{@token}")}"} />

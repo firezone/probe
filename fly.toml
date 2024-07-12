@@ -29,15 +29,70 @@ type = 'connections'
 hard_limit = 1000
 soft_limit = 1000
 
-# wireguard
+# We can't forward a range of ports unfortunately, so we pick a few common
+# ports to run the test from.
+
+[[services]]
+internal_port = 53
+protocol = "udp"
+[[services.ports]]
+port = 53
+
+[[services]]
+internal_port = 80
+protocol = "udp"
+[[services.ports]]
+port = 80
+
+[[services]]
+internal_port = 123
+protocol = "udp"
+[[services.ports]]
+port = 123
+
+[[services]]
+internal_port = 161
+protocol = "udp"
+[[services.ports]]
+port = 161
+
+[[services]]
+internal_port = 443
+protocol = "udp"
+[[services.ports]]
+port = 443
+
+[[services]]
+internal_port = 500
+protocol = "udp"
+[[services.ports]]
+port = 500
+
+[[services]]
+internal_port = 514
+protocol = "udp"
+[[services.ports]]
+port = 514
+
+[[services]]
+internal_port = 1701
+protocol = "udp"
+[[services.ports]]
+port = 1701
+
 [[services]]
 internal_port = 51820
 protocol = "udp"
 [[services.ports]]
-start_port = 9000
-end_port = 65535
+port = 51820
+
+[[services]]
+internal_port = 60000
+protocol = "udp"
+[[services.ports]]
+port = 60000
 
 [[vm]]
 memory = '1gb'
-cpu_kind = 'shared'
+cpu_kind = 'performanc'
 cpus = 1

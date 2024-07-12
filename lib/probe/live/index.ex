@@ -8,7 +8,12 @@ defmodule Probe.Live.Index do
         _ -> "Unknown"
       end
 
-    {:ok, assign(socket, os: os, output: "Waiting on test to start...")}
+    {:ok,
+     assign(socket,
+       checks: %Probe.Runs.Run{}.checks,
+       os: os,
+       output: "Waiting on test to start..."
+     )}
   end
 
   def render(assigns) do
@@ -130,80 +135,108 @@ defmodule Probe.Live.Index do
        status: :started,
        output:
          socket.assigns.output <>
-           "\n\nTest started! Remote IP: #{:inet.ntoa(remote_ip)}"
+           "\nTest started! Remote IP: #{:inet.ntoa(remote_ip)}\n"
      )}
   end
 
-  def handle_info({:handshake_intiation, %{checks: checks}}, socket) do
+  def handle_info(:handshake_initiation, socket) do
+    checks = Map.put(socket.assigns.checks, "handshake_initiation", true)
+
     {:noreply,
      assign(socket,
        checks: checks,
        output:
          socket.assigns.output <>
-           "\n\nHandshake initiation received!"
+           "\nHandshake initiation received!"
      )}
   end
 
-  def handle_info({:handshake_response, %{checks: checks}}, socket) do
+  def handle_info(:handshake_response, socket) do
+    checks = Map.put(socket.assigns.checks, "handshake_response", true)
+
     {:noreply,
      assign(socket,
        checks: checks,
        output:
          socket.assigns.output <>
-           "\n\nHandshake response received!"
+           "\nHandshake response received!"
      )}
   end
 
-  def handle_info({:cookie_reply, %{checks: checks}}, socket) do
+  def handle_info(:cookie_reply, socket) do
+    checks = Map.put(socket.assigns.checks, "cookie_reply", true)
+
     {:noreply,
      assign(socket,
        checks: checks,
        output:
          socket.assigns.output <>
-           "\n\nCookie reply received!"
+           "\nCookie reply received!"
      )}
   end
 
-  def handle_info({:data_message, %{checks: checks}}, socket) do
+  def handle_info(:data_message, socket) do
+    checks = Map.put(socket.assigns.checks, "data_message", true)
+
     {:noreply,
      assign(socket,
        checks: checks,
        output:
          socket.assigns.output <>
-           "\n\nData message received!"
+           "\nData message received!"
      )}
   end
 
-  def handle_info({:completed, %{checks: checks}}, socket) do
-    if socket.assigns.status not in [:pending, :failed] &&
-         Enum.all?(Map.values(socket.assigns.checks)) do
+  def handle_info({:completed, run_id}, socket) do
+    with {:ok, run} <- Probe.Runs.fetch_run(run_id),
+         nil <- run.completed_at,
+         {:ok, run} <-
+           Probe.Runs.update_run(run, %{
+             checks: socket.assigns.checks,
+             completed_at: DateTime.utc_now()
+           }) do
+      Probe.Stats.upsert(run)
+
       {:noreply,
        assign(socket,
-         status: :completed,
-         output: socket.assigns.output <> "\n\nTest completed successfully! All checks passed."
+         output:
+           socket.assigns.output <>
+             ~s"""
+
+             \nTest completed!
+
+             Results:
+
+             Handshake initiation: #{run.checks["handshake_initiation"]}
+             Handshake response: #{run.checks["handshake_response"]}
+             Cookie reply: #{run.checks["cookie_reply"]}
+             Data message: #{run.checks["data_message"]}
+             """
        )}
     else
-      fail(socket, checks)
+      _already_completed ->
+        # Most likely succeeded already
+        {:noreply, socket}
     end
   end
 
-  def handle_info({:failed, %{checks: checks}}, socket) do
-    if socket.assigns.status not in [:pending, :completed] do
-      fail(socket, checks)
+  # Canceled by user, likely Ctrl+C or script error
+  def handle_info({:canceled, run_id}, socket) do
+    with {:ok, run} <- Probe.Runs.fetch_run(run_id),
+         nil <- run.completed_at,
+         {:ok, run} <-
+           Probe.Runs.update_run(run, %{
+             checks: socket.assigns.checks,
+             completed_at: DateTime.utc_now()
+           }) do
+      {:noreply,
+       assign(socket,
+         output: socket.assigns.output <> "\n\nTest canceled!\n\nResults: #{inspect(run.checks)}"
+       )}
     else
-      {:error, "can't transition from #{socket.assigns.status} to failed"}
+      _already_completed ->
+        # Most likely succeeded already
+        {:noreply, socket}
     end
-  end
-
-  defp fail(socket, checks) do
-    output =
-      socket.assigns.output <>
-        """
-        \n
-        Test failed! Some checks did not pass:
-        #{inspect(checks)}
-        """
-
-    {:noreply, assign(socket, status: :failed, output: output)}
   end
 end

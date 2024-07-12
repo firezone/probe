@@ -17,14 +17,16 @@ defmodule Probe.Runs do
   end
 
   def start_run(attrs) do
-    # checks =
-    #   Ecto.Enum.values(Check, :adapter)
-    #   |> Enum.map(&Check.changeset(%{adapter: &1}))
-
     %Run{}
+    |> Map.put(:started_at, DateTime.utc_now())
     |> Run.changeset(attrs)
-    # |> Ecto.Changeset.put_assoc(:checks, checks)
     |> Repo.insert()
+  end
+
+  def complete_run(%Run{} = run) do
+    run
+    |> Run.changeset(%{completed_at: DateTime.utc_now()})
+    |> Repo.update()
   end
 
   def list_aggregates_by_country do
@@ -50,17 +52,22 @@ defmodule Probe.Runs do
     end
   end
 
+  def update_run(%Run{} = run, attrs) do
+    run
+    |> Run.changeset(attrs)
+    |> Repo.update()
+  end
+
   def fetch_run(id) do
     from(run in Run, as: :runs)
     |> where([runs: runs], runs.id == ^id)
-    |> preload(:checks)
     |> Repo.fetch()
   end
 
-  def fetch_run_by_topic!(topic) do
+  def fetch_run_by_topic(topic) do
     from(run in Run, as: :runs)
     |> where([runs: runs], runs.topic == ^topic)
-    |> Repo.one!()
+    |> Repo.fetch()
   end
 
   defp run_topic(%Run{} = run), do: run_topic(run.id)

@@ -19,6 +19,9 @@ defmodule Probe.Runs.Run do
     field :topic, :string
     field :port, :integer
 
+    field :started_at, :utc_datetime_usec
+    field :completed_at, :utc_datetime_usec
+
     field :checks, :map, default: @checks
 
     # TODO: we need to store hash or remote_ip or something similar to prevent one person from submitting too many runs
@@ -37,6 +40,8 @@ defmodule Probe.Runs.Run do
       :remote_ip_provider,
       :topic,
       :port,
+      :started_at,
+      :completed_at,
       :checks
     ])
     |> validate_required([
