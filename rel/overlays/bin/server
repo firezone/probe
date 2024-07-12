@@ -2,7 +2,4 @@
 set -eu
 
 cd -P -- "$(dirname -- "$0")"
-
-sudo setcap cap_net_bind_service=+ep ./probe
-
 PHX_SERVER=true exec ./probe start
