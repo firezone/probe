@@ -23,7 +23,9 @@ defmodule Probe.Live.Component.Results do
               text-sm
               font-medium
               bg-white
-              border
+              border-t
+              border-l
+              border-b
               border-gray-200
               rounded-s-lg
               hover:bg-gray-100

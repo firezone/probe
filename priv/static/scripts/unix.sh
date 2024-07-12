@@ -15,6 +15,14 @@ cancel() {
 }
 trap cancel EXIT
 
+# Function to send payloads
+send_payload() {
+    payload=$1
+    for i in 1 2 3; do
+        echo -n "$payload" | base64 -d | nc -u -w 0 $host $port
+    done
+}
+
 # Fetch the port and payloads to test with
 init_data=$(curl -4 -fsSL -H 'Accept: text/plain' -XPOST "$1/start")
 
@@ -35,16 +43,16 @@ fi
 echo "Running test against port $port..."
 
 # Run the test, sending each payload 3 times. It's UDP, after all.
-for i in 1 2 3; do echo -n $hs_init | base64 -d | nc -u -w 0 $host $port; done
+send_payload "$hs_init"
 sleep 1
 echo "."
-for i in 1 2 3; do echo -n $hs_response | base64 -d | nc -u -w 0 $host $port; done
+send_payload "$hs_response"
 sleep 1
 echo "."
-for i in 1 2 3; do echo -n $cookie_reply | base64 -d | nc -u -w 0 $host $port; done
+send_payload "$cookie_reply"
 sleep 1
 echo "."
-for i in 1 2 3; do echo -n $data_message | base64 -d | nc -u -w 0 $host $port; done
+send_payload "$data_message"
 sleep 1
 
 curl -4 -fsSL -H 'Accept: text/plain' -XPOST "$run_url/complete"

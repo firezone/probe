@@ -461,6 +461,7 @@ defmodule Probe.CoreComponents do
   Renders an inline code block with a copy-to-clipboard button.
   """
   attr :value, :string, required: true
+  attr :multiline, :boolean, default: false
 
   def code_block(assigns) do
     id = System.unique_integer([:positive, :monotonic])
@@ -470,21 +471,31 @@ defmodule Probe.CoreComponents do
     <div class="w-full max-w-[48rem]">
       <div class="relative">
         <label for={"copy-text-input-#{@comp_id}"} class="sr-only">Label</label>
-        <input
-          id={"copy-text-input-#{@comp_id}"}
-          type="text"
-          class="cursor-text col-span-6 bg-gray-50 border border-gray-300 font-medium text-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          value={@value}
-          disabled
-          readonly
-        />
+        <%= if @multiline do %>
+          <textarea
+            id={"copy-text-input-#{@comp_id}"}
+            class="cursor-text col-span-6 bg-gray-50 border border-gray-300 font-medium text-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            rows="4"
+            disabled
+            readonly
+          ><%= @value %></textarea>
+        <% else %>
+          <input
+            id={"copy-text-input-#{@comp_id}"}
+            type="text"
+            class="cursor-text col-span-6 bg-gray-50 border border-gray-300 font-medium text-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            value={@value}
+            disabled
+            readonly
+          />
+        <% end %>
         <button
           id={"copy-button-#{@comp_id}"}
           phx-hook="ResetCopyIcon"
           phx-click={handle_copy_click(@comp_id)}
           data-copy-to-clipboard-target={"copy-text-input-#{@comp_id}"}
           data-tooltip-target={"tooltip-copy-text-input-#{@comp_id}"}
-          class="absolute end-2 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-2 inline-flex items-center justify-center"
+          class="absolute end-2 top-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-2 inline-flex items-center justify-center"
         >
           <span id={"default-icon-#{@comp_id}"}>
             <svg
@@ -746,6 +757,85 @@ defmodule Probe.CoreComponents do
     Enum.reduce(opts, msg, fn {key, value}, acc ->
       String.replace(acc, "%{#{key}}", fn _ -> to_string(value) end)
     end)
+  end
+
+  def privacy_policy_modal(assigns) do
+    ~H"""
+    <.modal id="privacy-modal" title="Privacy policy">
+      <h4 class="text-base leading-relaxed text-gray-500 dark:text-gray-400 font-semibold">
+        1. Information We Collect
+      </h4>
+      <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+        We do not collect any personally identifiable information (PII) when you use our tool.
+        We may collect anonymized data for analytics purposes to improve our service.
+      </p>
+      <h4 class="text-base leading-relaxed text-gray-500 dark:text-gray-400 font-semibold">
+        2. How We Use Information
+      </h4>
+      <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+        Anonymized data helps us understand how the service is used and how we can improve it.
+        We do not sell, trade, or otherwise transfer your information to outside parties.
+      </p>
+      <h4 class="text-base leading-relaxed text-gray-500 dark:text-gray-400 font-semibold">
+        3. Data Security
+      </h4>
+      <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+        We implement security measures to protect your data. However, no system is completely secure, and we cannot guarantee absolute security.
+      </p>
+      <h4 class="text-base leading-relaxed text-gray-500 dark:text-gray-400 font-semibold">
+        4. Changes to Privacy Policy
+      </h4>
+      <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+        We may update this policy occasionally. Continued use of the service means you accept any changes.
+      </p>
+      <h4 class="text-base leading-relaxed text-gray-500 dark:text-gray-400 font-semibold">
+        5. Contact Us
+      </h4>
+      <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+        If you have any questions about this privacy policy, please contact us at support@probe.sh.
+      </p>
+    </.modal>
+    """
+  end
+
+  def tos_modal(assigns) do
+    ~H"""
+    <.modal id="tos-modal" title="Terms of service">
+      <h4 class="text-base leading-relaxed text-gray-500 dark:text-gray-400 font-semibold">
+        1. Introduction
+      </h4>
+      <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+        Welcome to our WireGuard connectivity check tool. By using our service, you agree to comply with and be bound by the following terms and conditions.
+      </p>
+      <h4 class="text-base leading-relaxed text-gray-500 dark:text-gray-400 font-semibold">
+        2. Use of the Service
+      </h4>
+      <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+        Our tool is provided "as is" without any guarantees or warranties.
+        You agree to use the tool for lawful purposes only.
+        We reserve the right to modify or discontinue the service at any time without notice.
+      </p>
+      <h4 class="text-base leading-relaxed text-gray-500 dark:text-gray-400 font-semibold">
+        3. Limitation of Liability
+      </h4>
+      <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+        We are not liable for any damages resulting from the use or inability to use our service.
+        We are not responsible for any third-party content or services you access through our tool.
+      </p>
+      <h4 class="text-base leading-relaxed text-gray-500 dark:text-gray-400 font-semibold">
+        4. Changes to Terms
+      </h4>
+      <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+        We may update these terms occasionally. Continued use of the service means you accept any changes.
+      </p>
+      <h4 class="text-base leading-relaxed text-gray-500 dark:text-gray-400 font-semibold">
+        5. Contact Us
+      </h4>
+      <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+        If you have any questions about these terms, please contact us at support@probe.sh.
+      </p>
+    </.modal>
+    """
   end
 
   @doc """

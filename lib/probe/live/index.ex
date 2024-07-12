@@ -20,16 +20,16 @@ defmodule Probe.Live.Index do
     ~H"""
     <div>
       <div class="w-full flex items-center">
-        <div class="w-1/3">
-          <div class="m-4 w-48 h-16 min-w-32 bg-contain bg-logo-light dark:bg-logo-dark bg-no-repeat" />
+        <div class="hidden md:flex md:w-1/3">
+          <div class="m-4 w-48 h-16 min-w-24 bg-contain bg-logo-light dark:bg-logo-dark bg-no-repeat" />
         </div>
-        <div class="w-1/3 justify-center items-center bg-gray-50 dark:bg-gray-900 py-5 flex">
+        <div class="flex w-full md:w-1/3 justify-center items-center bg-gray-50 dark:bg-gray-900 py-5">
           <nav
             id="toggleMobileMenu"
             class="bg-gray-50 border-b border-gray-200 dark:bg-gray-900 block mx-auto dark:border-gray-800"
           >
             <div class="flex items-center">
-              <ul class="flex flex-row mt-0 w-full text-sm font-medium">
+              <ul class="flex flex-row mt-0 w-full text-xs sm:text-sm md:text-md font-medium">
                 <li class="inline dark:border-gray-700 border-b-0">
                   <.link navigate="/" class={tab_class(@live_action, [:run])}>
                     Run test
@@ -52,7 +52,7 @@ defmodule Probe.Live.Index do
             </div>
           </nav>
         </div>
-        <div class="w-1/3 mx-2 flex justify-end">
+        <div class="md:w-1/3 mx-2 flex justify-end">
           <button
             id="theme-toggle"
             phx-hook="DarkModeToggle"

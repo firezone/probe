@@ -5,23 +5,13 @@ defmodule Probe.Live.Component.Run do
 
   def mount(socket) do
     if connected?(socket) do
-      topic = :crypto.strong_rand_bytes(8) |> Base.url_encode64(padding: false)
-      :ok = Probe.PubSub.subscribe("run:#{topic}")
-
-      token =
-        Phoenix.Token.sign(Probe.Endpoint, "topic", %{
-          topic: topic,
-          port: @default_port
-        })
-
       port_options =
         Application.fetch_env!(:probe, :port_options)
         |> Enum.map(fn {name, {external_port, _internal_port}} -> {name, external_port} end)
 
       {:ok,
        assign(socket,
-         token: token,
-         topic: topic,
+         token: init(@default_port),
          default_port: @default_port,
          port_options: port_options
        )}
@@ -33,8 +23,8 @@ defmodule Probe.Live.Component.Run do
   def render(assigns) do
     ~H"""
     <div class="max-w-screen-md mx-auto">
-      <div class="flex w-full justify-center mb-8">
-        <%= if @os =~ ~r/(Mac OS X|Windows|Linux|FreeBSD|OpenBSD)/ do %>
+      <%= if @os && @os =~ ~r/(Mac OS X|Windows|Linux|FreeBSD|OpenBSD)/ do %>
+        <div class="flex w-full justify-center mb-8">
           <div class="inline-flex rounded-md shadow-sm" role="group">
             <button phx-click={show_macos()} id="macos-btn" type="button" class={~w[
                 inline-flex
@@ -83,7 +73,6 @@ defmodule Probe.Live.Component.Run do
                 bg-white
                 border-t
                 border-b
-                border-r
                 border-gray-200
                 hover:bg-gray-100
                 hover:text-blue-700
@@ -148,80 +137,138 @@ defmodule Probe.Live.Component.Run do
               Linux/Unix
             </button>
           </div>
+        </div>
+
+        <%= if connected?(@socket) do %>
+          <div class="text-xl font-semibold mb-4">
+            <span class="mb-4 text-gray-900 dark:text-white">Step 1: Choose a port:</span>
+            <.form for={%{}} phx-change="port_change" phx-target={@myself}>
+              <div class="py-2">
+                <div class="w-64">
+                  <.input
+                    phx-hook="InitFlowbite"
+                    id="run-port"
+                    name="port"
+                    type="select"
+                    options={@port_options}
+                    value={@default_port}
+                    phx-debounce="250"
+                  />
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  Select a different port if you suspect WireGuard's default port is blocked.
+                </p>
+              </div>
+            </.form>
+          </div>
+
+          <div
+            id="macos-instructions"
+            style={(@os in ["Mac OS X"] && "display: block") || "display: none"}
+          >
+            <p class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Step 2: Run this command:
+            </p>
+
+            <.code_block multiline={true} value={unix_cmd(@token)} />
+            <div class="mt-2 flex justify-end">
+              <.link
+                navigate="https://github.com/firezone/probe/tree/main/priv/static/scripts/unix.sh"
+                target="_blank"
+                class="text-xs text-blue-600 dark:text-blue-400 underline hover:no-underline"
+              >
+                View script source
+              </.link>
+            </div>
+          </div>
+
+          <div
+            id="windows-instructions"
+            style={(@os in ["Windows"] && "display: block") || "display: none"}
+          >
+            <p class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Step 2: Run this command:
+            </p>
+
+            <.code_block multiline={true} value={windows_cmd(@token)} />
+            <div class="mt-2 flex justify-end">
+              <.link
+                navigate="https://github.com/firezone/probe/tree/main/priv/static/scripts/windows.ps1"
+                target="_blank"
+                class="text-xs text-blue-600 dark:text-blue-400 underline hover:no-underline"
+              >
+                View script source
+              </.link>
+            </div>
+          </div>
+
+          <div
+            id="linux-instructions"
+            style={(@os in ["Linux", "FreeBSD", "OpenBSD"] && "display: block") || "display: none"}
+          >
+            <p class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Step 2: Run this command:
+            </p>
+
+            <.code_block multiline={true} value={unix_cmd(@token)} />
+            <div class="mt-2 flex justify-end">
+              <.link
+                navigate="https://github.com/firezone/probe/tree/main/priv/static/scripts/unix.sh"
+                target="_blank"
+                class="text-xs text-blue-600 dark:text-blue-400 underline hover:no-underline"
+              >
+                View script source
+              </.link>
+            </div>
+          </div>
+
+          <div class="mt-8">
+            <pre class="text-gray-900 dark:text-white"><%= @output %></pre>
+          </div>
         <% else %>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">
-            Uh oh! We don't have instructions for your operating system. Try
-            <.link navigate="/results">viewing the results</.link>
-            instead.
+            Waiting on WebSocket connection...
           </p>
         <% end %>
-      </div>
-
-      <%= if connected?(@socket) do %>
-        <div class="text-xl font-semibold mb-4">
-          <span class="mb-4 text-gray-900 dark:text-white">Step 1: Choose a port:</span>
-          <.form for={%{}} phx-change="port_change" phx-target={@myself}>
-            <div class="py-2">
-              <div class="w-64">
-                <.input
-                  phx-hook="InitFlowbite"
-                  id="run-port"
-                  name="port"
-                  type="select"
-                  options={@port_options}
-                  value={@default_port}
-                  phx-debounce="250"
-                />
-              </div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                Select a different port if you suspect WireGuard's default port is blocked.
-              </p>
-            </div>
-          </.form>
-        </div>
-
-        <div
-          id="macos-instructions"
-          style={(@os in ["Mac OS X"] && "display: block") || "display: none"}
-        >
-          <p class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Step 2: Run this command:
-          </p>
-
-          <.code_block value={"bash <(curl -fsSL \"#{url(~p"/scripts/unix.sh")}\") #{url(~p"/runs/#{@token}")}"} />
-        </div>
-
-        <div
-          id="windows-instructions"
-          style={(@os in ["Windows"] && "display: block") || "display: none"}
-        >
-          <p class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Step 2: Copy and paste the command below into a PowerShell window:
-          </p>
-
-          <.code_block value={"powershell -command \"& { iwr -useb #{url(~p"/scripts/windows.ps1")} | iex } #{url(~p"/runs/#{@token}")}\""} />
-        </div>
-
-        <div
-          id="linux-instructions"
-          style={(@os in ["Linux", "FreeBSD", "OpenBSD"] && "display: block") || "display: none"}
-        >
-          <p class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Step 2: Copy and paste the command below into your shell:
-          </p>
-
-          <.code_block value={"bash <(curl -fsSL \"#{url(~p"/scripts/unix.sh")}\") #{url(~p"/runs/#{@token}")}"} />
-        </div>
-
-        <div class="mt-8">
-          <pre class="text-gray-900 dark:text-white"><%= @output %></pre>
-        </div>
       <% else %>
-        <p class="text-2xl font-bold text-gray-900 dark:text-white">
-          Waiting on WebSocket connection...
-        </p>
+        <div calss="block">
+          <p class="text-xl font-bold text-gray-900 dark:text-white">
+            <%= @os || "Your OS" %> is not supported. Try
+            <.link
+              navigate="/results"
+              class="text-blue-600 dark:text-blue-400 underline hover:no-underline"
+            >
+              viewing the results
+            </.link>
+            instead.
+          </p>
+          <p class="text-base text-gray-500 dark:text-gray-400 mt-2">
+            Want it supported? Let us know by
+            <.link
+              class="text-blue-600 dark:text-blue-400 underline hover:no-underline"
+              navigate="https://www.github.com/firezone/probe/issues/new"
+              target="_blank"
+            >
+              opening a GitHub issue!
+            </.link>
+          </p>
+        </div>
       <% end %>
     </div>
+    """
+  end
+
+  defp unix_cmd(token) do
+    ~s"""
+    sh <(curl -fsSL "#{url(~p"/scripts/unix.sh")}") \\
+    #{url(~p"/runs/#{token}")}\
+    """
+  end
+
+  defp windows_cmd(token) do
+    ~s"""
+    powershell -command "& { iwr -useb #{url(~p"/scripts/windows.ps1")} | iex } \\
+    #{url(~p"/runs/#{token}")}"\
     """
   end
 
@@ -264,6 +311,8 @@ defmodule Probe.Live.Component.Run do
     |> JS.add_class("dark:bg-gray-700 text-blue-700", to: "#linux-btn")
   end
 
+  defp selected_class(nil, _), do: "dark:bg-gray-800 text-gray-900"
+
   defp selected_class(os, match_selected) do
     if os =~ match_selected do
       "dark:bg-gray-700 text-blue-700"
@@ -273,12 +322,16 @@ defmodule Probe.Live.Component.Run do
   end
 
   def handle_event("port_change", %{"port" => port}, socket) do
-    token =
-      Phoenix.Token.sign(Probe.Endpoint, "topic", %{
-        topic: socket.assigns.topic,
-        port: port
-      })
+    {:noreply, assign(socket, token: init(port), port: port)}
+  end
 
-    {:noreply, assign(socket, token: token, port: port)}
+  defp init(port) do
+    topic = :crypto.strong_rand_bytes(8) |> Base.url_encode64(padding: false)
+    :ok = Probe.PubSub.subscribe("run:#{topic}")
+
+    Phoenix.Token.sign(Probe.Endpoint, "topic", %{
+      topic: topic,
+      port: port
+    })
   end
 end

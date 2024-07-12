@@ -91,6 +91,8 @@ defmodule Probe.Controllers.Run do
         Started: #{run.started_at}
         Ended: #{run.completed_at}
         Port: #{run.port}
+        City: #{run.remote_ip_location_city}
+        Region: #{run.remote_ip_location_region}
         Country: #{run.remote_ip_location_country}
         Latitude: #{run.remote_ip_location_lat}
         Longitude: #{run.remote_ip_location_lon}

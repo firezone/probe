@@ -13,15 +13,16 @@ defmodule Probe.Live.Component.Faq do
         <li>
           <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">What is Probe?</p>
           <p class="text-gray-600 dark:text-gray-400">
-            Probe is a testing service for WireGuard® connections.
+            Probe is a testing service for WireGuard® connectivity.
           </p>
         </li>
         <li>
           <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">How does it work?</p>
           <p class="text-gray-600 dark:text-gray-400">
-            When you run a test, your machine downloads and executes a script that sends UDP
-            packets crafted to mimic WireGuard messages to the probe.sh server. If all WireGuard message
-            types are received, the test is successful. Otherwise, the test fails.
+            When you run a test, your machine downloads and executes a script that sends
+            packets crafted to look like WireGuard traffic to the probe.sh server. If all
+            WireGuard message types are received, the test is successful.
+            Otherwise, the test fails.
           </p>
         </li>
         <li>
