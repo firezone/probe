@@ -1,5 +1,6 @@
 defmodule Probe.Runs.UdpServer do
   use GenServer
+  require Logger
   alias Probe.Runs
 
   def start_link(opts) do
@@ -121,7 +122,8 @@ defmodule Probe.Runs.UdpServer do
   end
 
   # Handle other packets
-  def handle_packet(_packet) do
+  def handle_packet(packet) do
+    Logger.info("Received invalid packet: #{Base.encode64(packet)}")
     {:error, :invalid_packet}
   end
 

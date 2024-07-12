@@ -140,8 +140,10 @@ defmodule Probe.Live.Component.Run do
         </div>
 
         <%= if connected?(@socket) do %>
-          <div class="text-xl font-semibold mb-4">
-            <span class="mb-4 text-gray-900 dark:text-white">Step 1: Choose a port:</span>
+          <div class="text-xl mb-4">
+            <span class="mb-4 font-semibold text-gray-900 dark:text-white">
+              Step 1: Choose a port:
+            </span>
             <.form for={%{}} phx-change="port_change" phx-target={@myself}>
               <div class="py-2">
                 <div class="w-64">
@@ -171,7 +173,12 @@ defmodule Probe.Live.Component.Run do
             </p>
 
             <.code_block multiline={true} value={unix_cmd(@token)} />
-            <div class="mt-2 flex justify-end">
+            <div class="mt-2 flex justify-between">
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                WireGuard <strong>not</strong>
+                required! All you need is <code class="text-gray-900 dark:text-white">curl</code>, <code class="text-gray-900 dark:text-white">base64</code>,
+                and <code class="text-gray-900 dark:text-white">nc</code>.
+              </p>
               <.link
                 navigate="https://github.com/firezone/probe/tree/main/priv/static/scripts/unix.sh"
                 target="_blank"
@@ -191,7 +198,15 @@ defmodule Probe.Live.Component.Run do
             </p>
 
             <.code_block multiline={true} value={windows_cmd(@token)} />
-            <div class="mt-2 flex justify-end">
+            <div class="mt-2 flex justify-between">
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                WireGuard <strong>not</strong>
+                required! All you need is <.link
+                  navigate="https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows"
+                  class="text-blue-600 dark:text-blue-400 underline hover:no-underline"
+                  target="_blank"
+                >Windows Powershell</.link>.
+              </p>
               <.link
                 navigate="https://github.com/firezone/probe/tree/main/priv/static/scripts/windows.ps1"
                 target="_blank"
@@ -211,7 +226,12 @@ defmodule Probe.Live.Component.Run do
             </p>
 
             <.code_block multiline={true} value={unix_cmd(@token)} />
-            <div class="mt-2 flex justify-end">
+            <div class="mt-2 flex justify-between">
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                WireGuard <strong>not</strong>
+                required! All you need is <code class="text-gray-900 dark:text-white">curl</code>, <code class="text-gray-900 dark:text-white">base64</code>,
+                and <code class="text-gray-900 dark:text-white">nc</code>.
+              </p>
               <.link
                 navigate="https://github.com/firezone/probe/tree/main/priv/static/scripts/unix.sh"
                 target="_blank"
@@ -267,8 +287,7 @@ defmodule Probe.Live.Component.Run do
 
   defp windows_cmd(token) do
     ~s"""
-    powershell -command "& { iwr -useb #{url(~p"/scripts/windows.ps1")} | iex } \\
-    #{url(~p"/runs/#{token}")}"\
+    powershell -command "& { $run_url='#{url(~p"/runs/#{token}")}'; iwr -useb #{url(~p"/scripts/windows.ps1")} | iex }"
     """
   end
 
