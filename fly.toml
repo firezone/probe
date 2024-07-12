@@ -94,5 +94,5 @@ port = 60000
 
 [[vm]]
 memory = '1gb'
-cpu_kind = 'performanc'
+cpu_kind = 'performance'
 cpus = 1
