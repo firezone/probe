@@ -5,15 +5,11 @@ defmodule Probe.Live.Component.Run do
 
   def mount(socket) do
     if connected?(socket) do
-      port_options =
-        Application.fetch_env!(:probe, :port_options)
-        |> Enum.map(fn {name, {external_port, _internal_port}} -> {name, external_port} end)
-
       {:ok,
        assign(socket,
          token: init(@default_port),
          default_port: @default_port,
-         port_options: port_options
+         port_options: Application.fetch_env!(:probe, :port_options)
        )}
     else
       {:ok, socket}

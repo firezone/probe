@@ -10,8 +10,8 @@ defmodule Probe.Runs.Adapters.Vanilla do
     # Start a child for each port 
     children =
       Application.fetch_env!(:probe, :port_options)
-      |> Enum.map(fn {_, {_external_port, internal_port}} ->
-        {Probe.Runs.UdpServer, [port: internal_port]}
+      |> Enum.map(fn {_, port} ->
+        {Probe.Runs.UdpServer, [port: port]}
       end)
 
     Supervisor.init(children, strategy: :one_for_one)
