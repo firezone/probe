@@ -9,15 +9,15 @@ defmodule Probe.MapComponents do
       <div class="flex justify-center items-center mb-3">
         <div class="text-sm text-gray-600 dark:text-gray-200 mr-2">0% success</div>
         <div class="bg-[#8b0000] w-6 h-6"></div>
-        <div class="bg-[#d62728] w-6 h-6"></div>
-        <div class="bg-[#ff7f0e] w-6 h-6"></div>
-        <div class="bg-[#8c564b] w-6 h-6"></div>
-        <div class="bg-[#e377c2] w-6 h-6"></div>
-        <div class="bg-[#bcbd22] w-6 h-6"></div>
-        <div class="bg-[#9467bd] w-6 h-6"></div>
-        <div class="bg-[#17becf] w-6 h-6"></div>
-        <div class="bg-[#1f77b4] w-6 h-6"></div>
-        <div class="bg-[#2ca02c] w-6 h-6"></div>
+        <div class="bg-[#B22222] w-6 h-6"></div>
+        <div class="bg-[#DC143C] w-6 h-6"></div>
+        <div class="bg-[#FF4500] w-6 h-6"></div>
+        <div class="bg-[#FF6347] w-6 h-6"></div>
+        <div class="bg-[#FF8C00] w-6 h-6"></div>
+        <div class="bg-[#FFD700] w-6 h-6"></div>
+        <div class="bg-[#ADFF2F] w-6 h-6"></div>
+        <div class="bg-[#7FFF00] w-6 h-6"></div>
+        <div class="bg-[#008000] w-6 h-6"></div>
         <div class="text-sm text-gray-600 dark:text-gray-200 ml-2">100% success</div>
       </div>
       <div class="mx-auto flex justify-between mb-4 w-64"></div>
@@ -10120,15 +10120,15 @@ defmodule Probe.MapComponents do
   defp fill(num_runs, num_succeeded) do
     case num_succeeded / num_runs do
       rate when rate < 0.1 -> "#8b0000"
-      rate when rate < 0.2 -> "#d62728"
-      rate when rate < 0.3 -> "#ff7f0e"
-      rate when rate < 0.4 -> "#8c564b"
-      rate when rate < 0.5 -> "#e377c2"
-      rate when rate < 0.6 -> "#bcbd22"
-      rate when rate < 0.7 -> "#9467bd"
-      rate when rate < 0.8 -> "#17becf"
-      rate when rate < 0.9 -> "#1f77b4"
-      _ -> "#2ca02c"
+      rate when rate < 0.2 -> "#B22222"
+      rate when rate < 0.3 -> "#DC143C"
+      rate when rate < 0.4 -> "#FF4500"
+      rate when rate < 0.5 -> "#FF6347"
+      rate when rate < 0.6 -> "#FF8C00"
+      rate when rate < 0.7 -> "#FFD700"
+      rate when rate < 0.8 -> "#ADFF2F"
+      rate when rate < 0.9 -> "#7FFF00"
+      _ -> "#008000"
     end
   end
 end

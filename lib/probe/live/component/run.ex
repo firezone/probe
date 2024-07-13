@@ -34,7 +34,7 @@ defmodule Probe.Live.Component.Run do
       <%= if @os && @os =~ ~r/(Mac OS X|Windows|Linux|FreeBSD|OpenBSD)/ do %>
         <%= if connected?(@socket) do %>
           <h3 class="text-xl mb-4 font-semibold text-gray-900 dark:text-white">
-            Step 1: Choose an operating system:
+            Step 1: Choose your operating system:
           </h3>
           <div class="w-full mb-8">
             <div class="inline-flex rounded-md shadow-sm" role="group">
@@ -154,11 +154,16 @@ defmodule Probe.Live.Component.Run do
           <h3 class="text-xl mb-4 font-semibold text-gray-900 dark:text-white">
             Step 2: Choose a port:
           </h3>
-          <.form for={%{}} phx-change="port_change" phx-target={@myself}>
+          <.form
+            id="port-form"
+            for={%{}}
+            phx-change="port_change"
+            phx-target={@myself}
+            phx-hook="InitFlowbite"
+          >
             <div class="mb-4">
               <div class="w-64">
                 <.input
-                  phx-hook="InitFlowbite"
                   id="run-port"
                   name="port"
                   type="select"
@@ -253,12 +258,55 @@ defmodule Probe.Live.Component.Run do
 
           <div class="mt-8">
             <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              Test result:
+              Step 4: See the results:
             </h3>
 
-            <p class="mt-4 text-gray-500 dark:text-gray-400">
-              Status: <span class="text-gray-900 dark:text-white"><%= @status %></span>
+            <p class="pb-2 text-sm text-gray-500 dark:text-gray-400">
+              This section will update in real-time as the test progresses.
             </p>
+
+            <hr />
+
+            <div class="py-8">
+              <p class="text-lg text-gray-500 dark:text-gray-400">
+                Status: <span class="text-gray-900 dark:text-white"><%= @status %></span>
+              </p>
+
+              <div class="mt-8 grid grid-cols-4 divide-dashed divide-x-2">
+                <.check title="Handshake initiation" status={@checks.handshake_initiation}>
+                  <:body>
+                    <pre class="mb-5 text-xs text-gray-600 dark:text-gray-400">msg_type = 0x01</pre>
+                    <p class="text-sm">
+                      This is the first message WireGuard sends to initiate a tunnel.
+                    </p>
+                  </:body>
+                </.check>
+                <.check title="Handshake response" status={@checks.handshake_response}>
+                  <:body>
+                    <pre class="mb-5 text-xs text-gray-600 dark:text-gray-400">msg_type = 0x02</pre>
+                    <p class="text-sm">
+                      This is the reply to the handshake initiation message.
+                    </p>
+                  </:body>
+                </.check>
+                <.check title="Cookie reply" status={@checks.cookie_reply}>
+                  <:body>
+                    <pre class="mb-5 text-xs text-gray-600 dark:text-gray-400">msg_type = 0x03</pre>
+                    <p class="text-sm">
+                      This message is used to mitigate DoS attacks that exploit the computational cost of public-key cryptography.
+                    </p>
+                  </:body>
+                </.check>
+                <.check title="Data message" status={@checks.data_message}>
+                  <:body>
+                    <pre class="mb-5 text-xs text-gray-600 dark:text-gray-400">msg_type = 0x04</pre>
+                    <p class="text-sm">
+                      The encrypted payload used to transport application data.
+                    </p>
+                  </:body>
+                </.check>
+              </div>
+            </div>
           </div>
         <% else %>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">

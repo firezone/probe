@@ -1,20 +1,24 @@
 defmodule Probe.Controllers.Run do
   use Probe, :controller
+  require Logger
   alias Probe.Runs.UdpServer
 
   @run_timeout 15_000
+  @token_max_age 60
 
   action_fallback Probe.Controllers.Fallback
 
   def start(conn, %{"token" => token}) do
-    with {:ok, %{topic: topic} = attrs} <-
-           Phoenix.Token.verify(Probe.Endpoint, "topic", token, max_age: 60) do
-      Probe.PubSub.broadcast("run:#{topic}", {:started, %{remote_ip: conn.remote_ip}})
+    with {:ok, %{topic: topic, port: port} = attrs} <-
+           Phoenix.Token.verify(Probe.Endpoint, "topic", token, max_age: @token_max_age) do
+      Probe.PubSub.broadcast("run:#{topic}", :started)
 
       {city, region, country, latitude, longitude, provider} = get_remote_ip_location(conn)
 
       attrs =
         Map.merge(attrs, %{
+          port: port,
+          checks: %{},
           remote_ip_location_country: country,
           remote_ip_location_region: region,
           remote_ip_location_city: city,
@@ -32,7 +36,8 @@ defmodule Probe.Controllers.Run do
 
       send_resp(conn, 200, init_data(run))
     else
-      _ ->
+      error ->
+        Logger.error("Failed to start run: #{inspect(error)}")
         send_resp(conn, 401, "invalid or expired token")
     end
   end

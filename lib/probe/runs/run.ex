@@ -1,13 +1,6 @@
 defmodule Probe.Runs.Run do
   use Probe, :schema
 
-  @checks %{
-    "handshake_initiation" => false,
-    "handshake_response" => false,
-    "cookie_reply" => false,
-    "data_message" => false
-  }
-
   schema "runs" do
     field :remote_ip_location_country, :string
     field :remote_ip_location_region, :string
@@ -22,7 +15,7 @@ defmodule Probe.Runs.Run do
     field :started_at, :utc_datetime_usec
     field :completed_at, :utc_datetime_usec
 
-    field :checks, :map, default: @checks
+    embeds_one :checks, Probe.Runs.Checks, on_replace: :delete
 
     # TODO: we need to store hash or remote_ip or something similar to prevent one person from submitting too many runs
 
@@ -41,9 +34,9 @@ defmodule Probe.Runs.Run do
       :topic,
       :port,
       :started_at,
-      :completed_at,
-      :checks
+      :completed_at
     ])
+    |> cast_embed(:checks)
     |> validate_required([
       :remote_ip_location_country,
       :topic,

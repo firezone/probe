@@ -30,10 +30,10 @@ defmodule Probe.Stats do
   end
 
   defp num_succeeded_incrementer(%{
-         "handshake_initiation" => true,
-         "handshake_response" => true,
-         "cookie_reply" => true,
-         "data_message" => true
+         handshake_initiation: true,
+         handshake_response: true,
+         cookie_reply: true,
+         data_message: true
        }),
        do: 1
 

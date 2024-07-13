@@ -6,14 +6,15 @@ defmodule Probe.Live.Component.Faq do
     <div class="max-w-screen-md mx-auto">
       <h1 class="text-4xl font-bold text-gray-800 dark:text-gray-200">FAQ</h1>
       <p class="text-gray-600 dark:text-gray-400 mt-4">
-        All the things you wanted to know about Probe, and maybe even a few you didn't.
+        All the things you wanted to know about probe.sh, and maybe even a few you didn't.
       </p>
 
       <ul class="mt-8 space-y-4">
         <li>
-          <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">What is Probe?</p>
+          <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">What is probe.sh?</p>
           <p class="text-gray-600 dark:text-gray-400">
-            Probe is a testing service for WireGuard® connectivity.
+            probe.sh is a service for testing WireGuard® connectivity that is designed to run
+            using common tools available on most operating systems.
           </p>
         </li>
         <li>
@@ -30,11 +31,11 @@ defmodule Probe.Live.Component.Faq do
             Is it reliable?
           </p>
           <p class="text-gray-600 dark:text-gray-400">
-            Probe attempts to detect if your WireGuard traffic is being blocked on its way from
+            probe.sh attempts to detect if your WireGuard packets are being dropped on their way from
             your device to the probe.sh server. This can happen for a number of reasons, but
             we've found it's most commonly due to either your local network or your ISP. However,
-            some DPI systems could trigger a false positive result if they block using
-            more advanced techniques. We
+            some DPI systems could trigger a false positive result if they filter traffic using
+            more advanced techniques than WireGuard header matching. We
             <.link
               navigate="https://www.github.com/firezone/probe"
               class="text-blue-600 dark:text-blue-400 hover:no-underline underline"
@@ -50,7 +51,7 @@ defmodule Probe.Live.Component.Faq do
           </p>
           <p class="text-gray-600 dark:text-gray-400">
             We care deeply about user privacy. No IP addresses or personal data is collected
-            when you use the Probe service. We collect anonymized, aggregated statistics related
+            when you use the probe.sh service. We collect anonymized, aggregated statistics related
             to each test that consists of the following:
             <ul class="list-disc list-inside m-4 text-gray-600 dark:text-gray-400">
               <li>Test result for each WireGuard message type</li>
@@ -71,7 +72,7 @@ defmodule Probe.Live.Component.Faq do
         <li>
           <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">Who built it?</p>
           <p class="text-gray-600 dark:text-gray-400">
-            Probe was built by the team behind <.link
+            probe.sh was built by the team behind <.link
               navigate="https://www.firezone.dev?utm_source=probe"
               class="text-blue-600 dark:text-blue-400 hover:no-underline underline"
               target="_blank"
@@ -83,7 +84,7 @@ defmodule Probe.Live.Component.Faq do
             Why did you build this?
           </p>
           <p class="text-gray-600 dark:text-gray-400">
-            We built Probe to help users test their WireGuard connections and to help us
+            We built probe.sh to help users test their WireGuard connections and to help us
             understand how WireGuard is being blocked around the world. Our goal is to share
             this data with the community to help users troubleshoot WireGuard connectivity issues.
           </p>
@@ -124,7 +125,7 @@ defmodule Probe.Live.Component.Faq do
             How do you locate my IP address?
           </p>
           <p class="text-gray-600 dark:text-gray-400">
-            Probe uses GeoLite2 data created by <.link
+            probe.sh uses GeoLite2 data created by <.link
               navigate="https://www.maxmind.com"
               class="text-blue-600 dark:text-blue-400 hover:no-underline underline"
               target="_blank"

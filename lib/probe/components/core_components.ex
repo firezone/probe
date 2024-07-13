@@ -474,7 +474,7 @@ defmodule Probe.CoreComponents do
         <%= if @multiline do %>
           <textarea
             id={"copy-text-input-#{@comp_id}"}
-            class="cursor-text col-span-6 bg-gray-50 border border-gray-300 font-medium text-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            class="cursor-text bg-gray-50 border border-gray-300 font-medium text-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pr-10 bg-white dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
             rows="4"
             disabled
             readonly
@@ -837,6 +837,34 @@ defmodule Probe.CoreComponents do
     </.modal>
     """
   end
+
+  attr :title, :string, required: true
+  attr :status, :boolean, default: nil, required: false
+  slot :body, required: true
+
+  def check(assigns) do
+    ~H"""
+    <div class="px-4 first:pl-0 first:pr-4 last:pl-4 last:pr-0">
+      <div class="flex items-center pb-5">
+        <.icon name={check_icon(@status)} class={check_icon_class(@status)} />
+      </div>
+      <h4 class="font-medium text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <%= @title %>
+      </h4>
+      <div class="mt-5 text-gray-600 dark:text-gray-400">
+        <%= render_slot(@body) %>
+      </div>
+    </div>
+    """
+  end
+
+  defp check_icon(nil), do: "hero-question-mark-circle"
+  defp check_icon(true), do: "hero-check-circle"
+  defp check_icon(false), do: "hero-x-circle"
+
+  defp check_icon_class(nil), do: "text-gray-300 dark:text-gray-400 w-12 h-12"
+  defp check_icon_class(true), do: "text-emerald-500 w-12 h-12"
+  defp check_icon_class(false), do: "text-rose-500 w-12 h-12"
 
   @doc """
   Translates the errors for a field from a keyword list of errors.

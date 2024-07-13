@@ -61,7 +61,8 @@ defmodule Probe do
   def live_view do
     quote do
       use Phoenix.LiveView,
-        layout: {Probe.Layouts, :app}
+        layout: {Probe.Layouts, :app},
+        container: {:div, class: "h-screen flex flex-col"}
 
       unquote(html_helpers())
     end

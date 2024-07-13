@@ -1,6 +1,13 @@
 defmodule Probe.Live.Index do
   use Probe, :live_view
 
+  @default_checks %{
+    handshake_initiation: nil,
+    handshake_response: nil,
+    cookie_reply: nil,
+    data_message: nil
+  }
+
   def mount(_params, _session, socket) do
     os =
       case UAParser.parse(get_connect_info(socket, :user_agent)) do
@@ -10,7 +17,7 @@ defmodule Probe.Live.Index do
 
     {:ok,
      assign(socket,
-       checks: %Probe.Runs.Run{}.checks,
+       checks: @default_checks,
        os: os,
        status: "Waiting for test to start..."
      )}
@@ -18,10 +25,10 @@ defmodule Probe.Live.Index do
 
   def render(assigns) do
     ~H"""
-    <div class="p-4">
+    <div class="flex-grow">
       <div class="w-full flex items-center">
-        <div class="hidden md:flex md:w-1/3">
-          <div class="m-4 w-48 h-16 min-w-24 bg-contain bg-logo-light dark:bg-logo-dark bg-no-repeat" />
+        <div class="hidden sm:flex sm:w-1/3">
+          <div class="m-4 lg:w-64 lg:h-24 md:w-48 md:h-16 sm:w-32 sm:h-12 min-w-32 bg-contain bg-logo-light dark:bg-logo-dark bg-no-repeat" />
         </div>
         <div class="flex w-full md:w-1/3 justify-center items-center bg-gray-50 dark:bg-gray-900 py-5">
           <nav
@@ -85,7 +92,13 @@ defmodule Probe.Live.Index do
       <div class="pb-24">
         <main class="dark:bg-gray-900 flex-1 p-4 space-y-4">
           <%= if @live_action == :run do %>
-            <.live_component module={Probe.Live.Component.Run} id="run" os={@os} status={@status} />
+            <.live_component
+              module={Probe.Live.Component.Run}
+              id="run"
+              os={@os}
+              status={@status}
+              checks={@checks}
+            />
           <% end %>
           <%= if @live_action in [:stats_map, :stats_list] do %>
             <.live_component module={Probe.Live.Component.Results} id="results" tab={@live_action} />
@@ -126,89 +139,76 @@ defmodule Probe.Live.Index do
     end
   end
 
-  def handle_info({:started, %{remote_ip: remote_ip}}, socket) do
+  def handle_info(:started, socket) do
     {:noreply,
      assign(socket,
-       status: :started,
-       output:
-         socket.assigns.output <>
-           "\nTest started! Remote IP: #{:inet.ntoa(remote_ip)}\n"
+       checks: @default_checks,
+       status: "Test started!"
      )}
   end
 
   def handle_info(:handshake_initiation, socket) do
-    checks = Map.put(socket.assigns.checks, "handshake_initiation", true)
+    checks = Map.put(socket.assigns.checks, :handshake_initiation, true)
 
     {:noreply,
      assign(socket,
-       checks: checks,
-       output:
-         socket.assigns.output <>
-           "\nHandshake initiation received!"
+       checks: checks
      )}
   end
 
   def handle_info(:handshake_response, socket) do
-    checks = Map.put(socket.assigns.checks, "handshake_response", true)
+    checks =
+      Map.put(socket.assigns.checks, :handshake_response, true)
 
     {:noreply,
      assign(socket,
-       checks: checks,
-       output:
-         socket.assigns.output <>
-           "\nHandshake response received!"
+       checks: checks
      )}
   end
 
   def handle_info(:cookie_reply, socket) do
-    checks = Map.put(socket.assigns.checks, "cookie_reply", true)
+    checks =
+      Map.put(socket.assigns.checks, :cookie_reply, true)
 
     {:noreply,
      assign(socket,
-       checks: checks,
-       output:
-         socket.assigns.output <>
-           "\nCookie reply received!"
+       checks: checks
      )}
   end
 
   def handle_info(:data_message, socket) do
-    checks = Map.put(socket.assigns.checks, "data_message", true)
+    checks =
+      Map.put(socket.assigns.checks, :data_message, true)
 
     {:noreply,
      assign(socket,
-       checks: checks,
-       output:
-         socket.assigns.output <>
-           "\nData message received!"
+       checks: checks
      )}
   end
 
   def handle_info({:completed, run_id}, socket) do
+    final_checks = finalize_checks(socket)
+
     with {:ok, run} <- Probe.Runs.fetch_run(run_id),
          nil <- run.completed_at,
          {:ok, run} <-
            Probe.Runs.update_run(run, %{
-             checks: socket.assigns.checks,
+             checks: final_checks,
              completed_at: DateTime.utc_now()
            }) do
       Probe.Stats.upsert(run)
 
+      status =
+        if Enum.all?(final_checks, fn {_k, v} -> v end) do
+          "Test succeeded!"
+        else
+          "Test failed!"
+        end
+
       {:noreply,
        assign(socket,
-         output:
-           socket.assigns.output <>
-             ~s"""
-
-             \nTest completed!
-
-             Results:
-
-             Handshake initiation: #{run.checks["handshake_initiation"]}
-             Handshake response: #{run.checks["handshake_response"]}
-             Cookie reply: #{run.checks["cookie_reply"]}
-             Data message: #{run.checks["data_message"]}
-             """
+         status: status,
+         checks: final_checks
        )}
     else
       _already_completed ->
@@ -219,20 +219,34 @@ defmodule Probe.Live.Index do
 
   # Canceled by user, likely Ctrl+C or script error
   def handle_info({:canceled, run_id}, socket) do
+    final_checks = finalize_checks(socket)
+
     with {:ok, run} <- Probe.Runs.fetch_run(run_id),
          nil <- run.completed_at,
          {:ok, run} <-
            Probe.Runs.update_run(run, %{
-             checks: socket.assigns.checks,
+             checks: final_checks,
              completed_at: DateTime.utc_now()
            }) do
       {:noreply,
        assign(socket,
-         output: socket.assigns.output <> "\n\nTest canceled!\n\nResults: #{inspect(run.checks)}"
+         status: "Test canceled!",
+         run: run
        )}
     else
       _already_canceled ->
         {:noreply, socket}
     end
+  end
+
+  defp finalize_checks(socket) do
+    Enum.map(socket.assigns.checks, fn {k, v} ->
+      if !v do
+        {k, false}
+      else
+        {k, true}
+      end
+    end)
+    |> Enum.into(%{})
   end
 end
