@@ -24,8 +24,9 @@ defmodule Probe.Router do
     get "/runs/:token", Controllers.Run, :show
 
     live "/", Live.Index, :run
-    live "/results", Live.Index, :results_map
-    live "/results/list", Live.Index, :results_list
+    live "/stats", Live.Index, :stats_map
+    live "/stats/map", Live.Index, :stats_map
+    live "/stats/list", Live.Index, :stats_list
     live "/faq", Live.Index, :faq
   end
 

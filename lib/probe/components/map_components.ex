@@ -3,7 +3,7 @@ defmodule Probe.MapComponents do
 
   attr :stats, :list
 
-  def results_map(assigns) do
+  def stats_map(assigns) do
     ~H"""
     <div>
       <div class="flex justify-center items-center mb-3">

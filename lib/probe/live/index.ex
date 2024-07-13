@@ -12,7 +12,7 @@ defmodule Probe.Live.Index do
      assign(socket,
        checks: %Probe.Runs.Run{}.checks,
        os: os,
-       output: "Waiting on test to start..."
+       status: "Waiting for test to start..."
      )}
   end
 
@@ -36,11 +36,8 @@ defmodule Probe.Live.Index do
                   </.link>
                 </li>
                 <li class="inline dark:border-gray-700 border-b-0">
-                  <.link
-                    navigate="/results"
-                    class={tab_class(@live_action, [:results_map, :results_table])}
-                  >
-                    View results
+                  <.link navigate="/stats" class={tab_class(@live_action, [:stats_map, :stats_table])}>
+                    View stats
                   </.link>
                 </li>
                 <li class="inline dark:border-gray-700 border-b-0">
@@ -88,10 +85,10 @@ defmodule Probe.Live.Index do
       <div class="pb-24">
         <main class="dark:bg-gray-900 flex-1 p-4 space-y-4">
           <%= if @live_action == :run do %>
-            <.live_component module={Probe.Live.Component.Run} id="run" os={@os} output={@output} />
+            <.live_component module={Probe.Live.Component.Run} id="run" os={@os} status={@status} />
           <% end %>
-          <%= if @live_action in [:results_map, :results_table] do %>
-            <.live_component module={Probe.Live.Component.Results} id="results" />
+          <%= if @live_action in [:stats_map, :stats_list] do %>
+            <.live_component module={Probe.Live.Component.Results} id="results" tab={@live_action} />
           <% end %>
           <%= if @live_action == :faq do %>
             <.live_component module={Probe.Live.Component.Faq} id="faq" />
@@ -234,8 +231,7 @@ defmodule Probe.Live.Index do
          output: socket.assigns.output <> "\n\nTest canceled!\n\nResults: #{inspect(run.checks)}"
        )}
     else
-      _already_completed ->
-        # Most likely succeeded already
+      _already_canceled ->
         {:noreply, socket}
     end
   end
