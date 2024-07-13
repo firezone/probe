@@ -93,6 +93,6 @@ protocol = "udp"
 port = 60000
 
 [[vm]]
-memory = '2gb'
+memory = '16gb'
 cpu_kind = 'performance'
-cpus = 1
+cpus = 16
