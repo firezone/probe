@@ -33,49 +33,49 @@ soft_limit = 1000
 # ports to run the test from.
 
 [[services]]
-internal_port = 2053
+internal_port = 9053
 protocol = "udp"
 [[services.ports]]
 port = 53
 
 [[services]]
-internal_port = 2080
+internal_port = 9080
 protocol = "udp"
 [[services.ports]]
 port = 80
 
 [[services]]
-internal_port = 2123
+internal_port = 9123
 protocol = "udp"
 [[services.ports]]
 port = 123
 
 [[services]]
-internal_port = 2161
+internal_port = 9161
 protocol = "udp"
 [[services.ports]]
 port = 161
 
 [[services]]
-internal_port = 2443
+internal_port = 9443
 protocol = "udp"
 [[services.ports]]
 port = 443
 
 [[services]]
-internal_port = 2500
+internal_port = 9500
 protocol = "udp"
 [[services.ports]]
 port = 500
 
 [[services]]
-internal_port = 2514
+internal_port = 9514
 protocol = "udp"
 [[services.ports]]
 port = 514
 
 [[services]]
-internal_port = 1701
+internal_port = 9701
 protocol = "udp"
 [[services.ports]]
 port = 1701
@@ -93,6 +93,6 @@ protocol = "udp"
 port = 60000
 
 [[vm]]
-memory = '16gb'
+memory = '4gb'
 cpu_kind = 'performance'
-cpus = 16
+cpus = 2
