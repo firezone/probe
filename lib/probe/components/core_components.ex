@@ -838,23 +838,37 @@ defmodule Probe.CoreComponents do
     """
   end
 
-  attr :title, :string, required: true
+  attr :type, :string, required: true
+  attr :header, :string, required: true
+  attr :description, :string, required: true
   attr :status, :boolean, default: nil, required: false
-  slot :body, required: true
+  attr :turn_status, :boolean, default: nil, required: false
 
-  def check(assigns) do
+  def check_row(assigns) do
     ~H"""
-    <div class="px-4 first:pl-0 first:pr-4 last:pl-4 last:pr-0">
-      <div class="flex items-center pb-5">
+    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+      <td class="w-3/12 px-4 py-4 whitespace-nowrap dark:text-white">
+        <span class="font-medium text-xs text-gray-700 uppercase bg-gray-100 px-1 py-0.5 rounded-sm dark:bg-gray-600 dark:text-gray-300">
+          <%= @type %>
+        </span>
+      </td>
+      <td class="w-1/12 px-4 py-4 whitespace-nowrap">
+        <span class="text-xs text-gray-600 dark:text-gray-400">
+          <%= @header %>
+        </span>
+      </td>
+      <td class="w-4/12 px-4 py-4 whitespace-nowrap">
+        <span class="text-sm text-wrap">
+          <%= @description %>
+        </span>
+      </td>
+      <td class="text-center px-4 py-4 whitespace-nowrap">
         <.icon name={check_icon(@status)} class={check_icon_class(@status)} />
-      </div>
-      <h4 class="font-medium text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-        <%= @title %>
-      </h4>
-      <div class="mt-5 text-gray-600 dark:text-gray-400">
-        <%= render_slot(@body) %>
-      </div>
-    </div>
+      </td>
+      <td class="text-center px-4 py-4 whitespace-nowrap dark:text-white">
+        <.icon name={check_icon(@turn_status)} class={check_icon_class(@turn_status)} />
+      </td>
+    </tr>
     """
   end
 
@@ -862,9 +876,9 @@ defmodule Probe.CoreComponents do
   defp check_icon(true), do: "hero-check-circle"
   defp check_icon(false), do: "hero-x-circle"
 
-  defp check_icon_class(nil), do: "text-gray-300 dark:text-gray-400 w-12 h-12"
-  defp check_icon_class(true), do: "text-emerald-500 w-12 h-12"
-  defp check_icon_class(false), do: "text-rose-500 w-12 h-12"
+  defp check_icon_class(nil), do: "text-gray-300 dark:text-gray-400 w-6 h-6"
+  defp check_icon_class(true), do: "text-emerald-500 w-6 h-6"
+  defp check_icon_class(false), do: "text-rose-500 w-6 h-6"
 
   @doc """
   Translates the errors for a field from a keyword list of errors.

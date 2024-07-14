@@ -34,6 +34,10 @@ hs_init="$3"
 hs_response="$4"
 cookie_reply="$5"
 data_message="$6"
+turn_hs_init="$7"
+turn_hs_response="$8"
+turn_cookie_reply="$9"
+turn_data_message="${10}"
 
 if [ -z "$port" ]; then
     echo "Failed to get a valid port from $run_url"
@@ -46,13 +50,25 @@ echo "Running test against port $port..."
 send_payload "$hs_init"
 sleep 1
 echo "."
+send_payload "$turn_hs_init"
+sleep 1
+echo "."
 send_payload "$hs_response"
+sleep 1
+echo "."
+send_payload "$turn_hs_response"
 sleep 1
 echo "."
 send_payload "$cookie_reply"
 sleep 1
 echo "."
+send_payload "$turn_cookie_reply"
+sleep 1
+echo "."
 send_payload "$data_message"
+sleep 1
+echo "."
+send_payload "$turn_data_message"
 sleep 1
 
 curl -4 -fsSL -H 'Accept: text/plain' -XPOST "$run_url/complete"

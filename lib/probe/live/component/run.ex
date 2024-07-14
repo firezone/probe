@@ -258,7 +258,7 @@ defmodule Probe.Live.Component.Run do
             </h3>
 
             <p class="pb-2 text-sm text-gray-500 dark:text-gray-400">
-              This section will update in real-time as the test progresses.
+              The table below will update in real-time as the test progresses.
             </p>
 
             <hr />
@@ -268,39 +268,66 @@ defmodule Probe.Live.Component.Run do
                 Status: <span class="text-gray-900 dark:text-white"><%= @status %></span>
               </p>
 
-              <div class="mt-8 grid grid-cols-4 divide-dashed divide-x-2">
-                <.check title="Handshake initiation" status={@checks.handshake_initiation}>
-                  <:body>
-                    <pre class="mb-5 text-xs text-gray-600 dark:text-gray-400">msg_type = 0x01</pre>
-                    <p class="text-sm">
-                      This is the first message WireGuard sends to initiate a tunnel.
-                    </p>
-                  </:body>
-                </.check>
-                <.check title="Handshake response" status={@checks.handshake_response}>
-                  <:body>
-                    <pre class="mb-5 text-xs text-gray-600 dark:text-gray-400">msg_type = 0x02</pre>
-                    <p class="text-sm">
-                      This is the reply to the handshake initiation message.
-                    </p>
-                  </:body>
-                </.check>
-                <.check title="Cookie reply" status={@checks.cookie_reply}>
-                  <:body>
-                    <pre class="mb-5 text-xs text-gray-600 dark:text-gray-400">msg_type = 0x03</pre>
-                    <p class="text-sm">
-                      This message is used to mitigate DoS attacks that exploit the computational cost of public-key cryptography.
-                    </p>
-                  </:body>
-                </.check>
-                <.check title="Data message" status={@checks.data_message}>
-                  <:body>
-                    <pre class="mb-5 text-xs text-gray-600 dark:text-gray-400">msg_type = 0x04</pre>
-                    <p class="text-sm">
-                      The encrypted payload used to transport application data.
-                    </p>
-                  </:body>
-                </.check>
+              <div class="mt-8 relative overflow-x-auto">
+                <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                  <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                      <th scope="col" class="w-3/12 px-4 py-3">
+                        Message Type
+                      </th>
+                      <th scope="col" class="w-1/12 px-4 py-3">
+                        Header
+                      </th>
+                      <th scope="col" class="w-4/12 px-4 py-3">
+                        Description
+                      </th>
+                      <th
+                        title="Vanilla WireGuard packets without any modifications"
+                        scope="col"
+                        class="text-center underline decoration-dashed px-4 py-3"
+                      >
+                        Plain
+                      </th>
+                      <th
+                        title="WireGuard packets encoded by Firezone"
+                        scope="col"
+                        class="text-center underline decoration-dashed px-4 py-3"
+                      >
+                        With Firezone
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <.check_row
+                      type="Handshake initiation"
+                      header="0x01"
+                      description="First message to initiate a tunnel"
+                      status={@checks.handshake_initiation}
+                      turn_status={@checks.turn_handshake_initiation}
+                    />
+                    <.check_row
+                      type="Handshake response"
+                      header="0x02"
+                      description="Reply to the handshake initiation message"
+                      status={@checks.handshake_response}
+                      turn_status={@checks.turn_handshake_response}
+                    />
+                    <.check_row
+                      type="Cookie reply"
+                      header="0x03"
+                      description="Used to mitigate DoS attacks"
+                      status={@checks.cookie_reply}
+                      turn_status={@checks.turn_cookie_reply}
+                    />
+                    <.check_row
+                      type="Data message"
+                      header="0x04"
+                      description="The encrypted payload used to transport application data."
+                      status={@checks.data_message}
+                      turn_status={@checks.turn_data_message}
+                    />
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

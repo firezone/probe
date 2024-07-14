@@ -38,6 +38,10 @@ try {
     $hs_response = $data[3]
     $cookie_reply = $data[4]
     $data_message = $data[5]
+    $turn_hs_init = $data[6]
+    $turn_hs_response = $data[7]
+    $turn_cookie_reply = $data[8]
+    $turn_data_message = $data[9]
 
     if (-not $port) {
         Write-Host "Failed to get a valid port from $run_url"
@@ -57,6 +61,18 @@ try {
     Start-Sleep -Seconds 1
     Write-Host "."
     Send-Payload -payload $data_message -probe_host $probe_host -port $port
+    Start-Sleep -Seconds 1
+    Write-Host "."
+    Send-Payload -payload $turn_hs_init -probe_host $probe_host -port $port
+    Start-Sleep -Seconds 1
+    Write-Host "."
+    Send-Payload -payload $turn_hs_response -probe_host $probe_host -port $port
+    Start-Sleep -Seconds 1
+    Write-Host "."
+    Send-Payload -payload $turn_cookie_reply -probe_host $probe_host -port $port
+    Start-Sleep -Seconds 1
+    Write-Host "."
+    Send-Payload -payload $turn_data_message -probe_host $probe_host -port $port
     Start-Sleep -Seconds 1
 
     Invoke-RestMethod -Method Post -Uri "$run_url/complete" -Headers @{Accept = 'text/plain'} -UseBasicParsing

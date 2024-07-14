@@ -119,7 +119,11 @@ defmodule Probe.Controllers.Run do
     #{Base.encode64(UdpServer.generate_handshake_initiation_payload(run))}
     #{Base.encode64(UdpServer.generate_handshake_response_payload(run))}
     #{Base.encode64(UdpServer.generate_cookie_reply_payload(run))}
-    #{Base.encode64(UdpServer.generate_data_payload(run))}
+    #{Base.encode64(UdpServer.generate_data_message_payload(run))}
+    #{Base.encode64(UdpServer.generate_turn_handshake_initiation_payload(run))}
+    #{Base.encode64(UdpServer.generate_turn_handshake_response_payload(run))}
+    #{Base.encode64(UdpServer.generate_turn_cookie_reply_payload(run))}
+    #{Base.encode64(UdpServer.generate_turn_data_message_payload(run))}
     """
   end
 end

@@ -34,6 +34,11 @@ defmodule Probe.Stats do
          handshake_response: true,
          cookie_reply: true,
          data_message: true
+         # If TURN is blocked but not WireGuard, it's still a success
+         # turn_handshake_initiation: true,
+         # turn_handshake_response: true,
+         # turn_cookie_reply: true,
+         # turn_data_message: true,
        }),
        do: 1
 

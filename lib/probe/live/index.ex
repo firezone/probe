@@ -5,7 +5,11 @@ defmodule Probe.Live.Index do
     handshake_initiation: nil,
     handshake_response: nil,
     cookie_reply: nil,
-    data_message: nil
+    data_message: nil,
+    turn_handshake_initiation: nil,
+    turn_handshake_response: nil,
+    turn_cookie_reply: nil,
+    turn_data_message: nil
   }
 
   def mount(_params, _session, socket) do
@@ -186,6 +190,45 @@ defmodule Probe.Live.Index do
      )}
   end
 
+  def handle_info(:turn_handshake_initiation, socket) do
+    checks = Map.put(socket.assigns.checks, :turn_handshake_initiation, true)
+
+    {:noreply,
+     assign(socket,
+       checks: checks
+     )}
+  end
+
+  def handle_info(:turn_handshake_response, socket) do
+    checks =
+      Map.put(socket.assigns.checks, :turn_handshake_response, true)
+
+    {:noreply,
+     assign(socket,
+       checks: checks
+     )}
+  end
+
+  def handle_info(:turn_cookie_reply, socket) do
+    checks =
+      Map.put(socket.assigns.checks, :turn_cookie_reply, true)
+
+    {:noreply,
+     assign(socket,
+       checks: checks
+     )}
+  end
+
+  def handle_info(:turn_data_message, socket) do
+    checks =
+      Map.put(socket.assigns.checks, :turn_data_message, true)
+
+    {:noreply,
+     assign(socket,
+       checks: checks
+     )}
+  end
+
   def handle_info({:completed, run_id}, socket) do
     final_checks = finalize_checks(socket)
 
@@ -199,10 +242,13 @@ defmodule Probe.Live.Index do
       Probe.Stats.upsert(run)
 
       status =
-        if Enum.all?(final_checks, fn {_k, v} -> v end) do
-          "Test succeeded!"
+        if final_checks.handshake_initiation &&
+             final_checks.handshake_response &&
+             final_checks.cookie_reply &&
+             final_checks.data_message do
+          "✅ Test succeeded!"
         else
-          "Test failed!"
+          "❌ Test failed!"
         end
 
       {:noreply,

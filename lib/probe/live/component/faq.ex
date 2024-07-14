@@ -47,6 +47,27 @@ defmodule Probe.Live.Component.Faq do
         </li>
         <li>
           <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            What can I do if my ISP is blocking WireGuard?
+          </p>
+          <p class="text-gray-600 dark:text-gray-400">
+            Most ISPs block WireGuard by dropping packets that look like WireGuard traffic. To get around
+            this, you can try using a different port or obfuscating the WireGuard
+            traffic in another transport.
+            <.link
+              navigate="https://www.firezone.dev?utm_source=probe"
+              class="text-blue-600 dark:text-blue-400 hover:no-underline underline"
+              target="_blank"
+            >
+              Firezone
+            </.link>
+            is one such tool that does this by encoding WireGuard traffic inside <.link
+              navigate="https://www.rfc-editor.org/rfc/rfc8656#name-channels"
+              class="text-blue-600 dark:text-blue-400 hover:no-underline underline"
+            >TURN ChannelData messages</.link>, for example.
+          </p>
+        </li>
+        <li>
+          <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">
             What data do you collect?
           </p>
           <p class="text-gray-600 dark:text-gray-400">
