@@ -1,9 +1,13 @@
-# Probe
+<p align="center">
+  <a href="https://probe.sh">
+    <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./priv/static/images/probe-logo-dark.svg">
+    <img alt="Probe logo" src="./priv/static/images/probe-logo-light.svg">
+    </picture>
+  </a>
+</p>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./priv/static/images/probe-logo-dark.svg">
-  <img alt="Probe logo" src="./priv/static/images/probe-logo-light.svg">
-</picture>
+# Probe
 
 This repo contains the application source for https://probe.sh, a web service for testing WireGuard connectivity built by the team behind [Firezone](https://www.github.com/firezone/firezone).
 
