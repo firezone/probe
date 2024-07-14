@@ -1,5 +1,3 @@
 # Security Policy
 
-## Reporting a Vulnerability
-
-Please open a security advisory in this repository at https://github.com/firezone/probe/security/advisories/new.
+To report a vulnerability, please open a security advisory in this repository at https://github.com/firezone/probe/security/advisories/new.

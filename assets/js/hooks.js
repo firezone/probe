@@ -46,6 +46,29 @@ let DarkModeToggle = {
       }
     });
   },
+  // Update the button again when view is updated
+  updated() {
+    var themeToggleDarkIcon = document.getElementById("theme-toggle-dark-icon");
+    var themeToggleLightIcon = document.getElementById(
+      "theme-toggle-light-icon"
+    );
+
+    // Change the icons inside the button based on previous settings
+    if (
+      localStorage.getItem("color-theme") === "dark" ||
+      (!("color-theme" in localStorage) &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches)
+    ) {
+      themeToggleLightIcon.classList.remove("hidden");
+    } else {
+      themeToggleDarkIcon.classList.remove("hidden");
+    }
+  },
+
+  destroyed() {
+    var themeToggleBtn = document.getElementById("theme-toggle");
+    themeToggleBtn.removeEventListener("click", function () {});
+  },
 };
 
 let InitFlowbite = {
@@ -66,6 +89,17 @@ let ResetCopyIcon = {
         event.target.classList.add("hidden");
       }, 2000);
     });
+  },
+  updated() {
+    // Reset button state on update. Otherwise will replace it with the copied icon.
+    const defaultIcon = document.querySelector("[id*='default-icon-']");
+    const successIcon = document.querySelector("[id*='success-icon-']");
+    defaultIcon.classList.remove("hidden");
+    successIcon.classList.add("hidden");
+  },
+  destroyed() {
+    window.removeEventListener("delayed-show", function () {});
+    window.removeEventListener("delayed-hide", function () {});
   },
 };
 

@@ -4,7 +4,9 @@ defmodule Probe.Controllers.Run do
   alias Probe.Runs.UdpServer
 
   @run_timeout 15_000
-  @token_max_age 60
+
+  # 5 minutes
+  @token_max_age 300
 
   action_fallback Probe.Controllers.Fallback
 
