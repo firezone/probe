@@ -54,22 +54,22 @@ try {
     Send-Payload -payload $hs_init -probe_host $probe_host -port $port
     Start-Sleep -Seconds 1
     Write-Host "."
-    Send-Payload -payload $hs_response -probe_host $probe_host -port $port
-    Start-Sleep -Seconds 1
-    Write-Host "."
-    Send-Payload -payload $cookie_reply -probe_host $probe_host -port $port
-    Start-Sleep -Seconds 1
-    Write-Host "."
-    Send-Payload -payload $data_message -probe_host $probe_host -port $port
-    Start-Sleep -Seconds 1
-    Write-Host "."
     Send-Payload -payload $turn_hs_init -probe_host $probe_host -port $port
+    Start-Sleep -Seconds 1
+    Write-Host "."
+    Send-Payload -payload $hs_response -probe_host $probe_host -port $port
     Start-Sleep -Seconds 1
     Write-Host "."
     Send-Payload -payload $turn_hs_response -probe_host $probe_host -port $port
     Start-Sleep -Seconds 1
     Write-Host "."
+    Send-Payload -payload $cookie_reply -probe_host $probe_host -port $port
+    Start-Sleep -Seconds 1
+    Write-Host "."
     Send-Payload -payload $turn_cookie_reply -probe_host $probe_host -port $port
+    Start-Sleep -Seconds 1
+    Write-Host "."
+    Send-Payload -payload $data_message -probe_host $probe_host -port $port
     Start-Sleep -Seconds 1
     Write-Host "."
     Send-Payload -payload $turn_data_message -probe_host $probe_host -port $port
