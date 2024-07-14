@@ -14,7 +14,7 @@ This repo contains the application source for https://probe.sh, a web service fo
 ## How it works
 
 1. When the Probe application boots, it starts an Elixir `gen_udp` server for each WireGuard listen port defined in `config.exs` to listen for incoming UDP payloads on that port.
-1. When a user visits the app, Probe starts a Phoenix LiveView process and unique cryptographic token to use for the test.
+1. When a user visits the app, Probe starts a Phoenix LiveView process and generates a unique cryptographic token to use for the test.
 1. When the user runs the script shown, it first sends a request to start the test, followed by a series of UDP payloads, and finally either a `complete` or `cancel` request to end the test.
 1. The `gen_udp` receives these payloads, and if they match one of the four [WireGuard](https://www.wireguard.com) message types, it broadcasts test updates to the LiveView process for that test.
 1. The user is immediately shown the results of the test.
