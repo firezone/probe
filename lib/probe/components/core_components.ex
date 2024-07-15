@@ -862,10 +862,10 @@ defmodule Probe.CoreComponents do
           <%= @description %>
         </span>
       </td>
-      <td class="text-center px-4 py-4 whitespace-nowrap">
+      <td class="w-1/12 text-center px-4 py-4 whitespace-nowrap">
         <.icon name={check_icon(@status)} class={check_icon_class(@status)} />
       </td>
-      <td class="text-center px-4 py-4 whitespace-nowrap dark:text-white">
+      <td class="w-2/12 text-center px-4 py-4 whitespace-nowrap dark:text-white">
         <.icon name={check_icon(@turn_status)} class={check_icon_class(@turn_status)} />
       </td>
     </tr>

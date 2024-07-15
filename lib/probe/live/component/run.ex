@@ -284,14 +284,14 @@ defmodule Probe.Live.Component.Run do
                       <th
                         title="Vanilla WireGuard packets without any modifications"
                         scope="col"
-                        class="text-center underline decoration-dashed px-4 py-3"
+                        class="w-1/12 text-center underline decoration-dashed px-4 py-3"
                       >
                         Plain
                       </th>
                       <th
                         title="WireGuard packets encoded by Firezone"
                         scope="col"
-                        class="text-center underline decoration-dashed px-4 py-3"
+                        class="w-2/12 text-center underline decoration-dashed px-4 py-3"
                       >
                         With Firezone
                       </th>
