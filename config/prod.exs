@@ -29,5 +29,27 @@ config :geolix,
     }
   ]
 
+config :probe,
+  port_options: [
+    # {"Port Name", {external_port, internal_port}},
+    {"53 (DNS)", 53},
+    {"69 (TFTP)", 69},
+    {"80 (HTTP)", 80},
+    {"123 (NTP)", 123},
+    {"443 (HTTPS)", 123},
+    {"500 (IKE)", 500},
+    {"514 (Syslog)", 514},
+    {"1701 (L2TP)", 1701},
+    {"8080", 8080},
+    {"8443", 8443},
+    {"10000", 10000},
+    {"20000", 20000},
+    {"30000", 30000},
+    {"40000", 40000},
+    {"50000", 50000},
+    {"51820 (WireGuard)", 51820},
+    {"60000", 60000}
+  ]
+
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.
