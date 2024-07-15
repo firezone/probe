@@ -1,8 +1,7 @@
 # This script is intended to run from https://probe.sh and requires a valid
 # token to start. NOTE: Unfortunately only IPv4 is supported at this time.
 
-$test_interval = 0.7
-$payload_interval = 0.1
+$payload_interval = 0.2
 
 # Function to send payloads
 function Send-Payload {
@@ -12,7 +11,7 @@ function Send-Payload {
         [int]$port
     )
 
-    for ($i = 0; $i -lt 3; $i++) {
+    for ($i = 0; $i -lt 5; $i++) {
         $udpClient = New-Object System.Net.Sockets.UdpClient
         $bytes = [System.Convert]::FromBase64String($payload)
         try {
@@ -54,30 +53,22 @@ try {
 
     Write-Host "Running test against host $probe_host port $port..."
 
-    # Run the test, sending each payload 3 times. It's UDP, after all.
+    # Run the test, sending each payload 5 times. It's UDP, after all.
     Send-Payload -payload $hs_init -probe_host $probe_host -port $port
-    Start-Sleep -Seconds $test_interval
     Write-Host "."
     Send-Payload -payload $turn_hs_init -probe_host $probe_host -port $port
-    Start-Sleep -Seconds $test_interval
     Write-Host "."
     Send-Payload -payload $hs_response -probe_host $probe_host -port $port
-    Start-Sleep -Seconds $test_interval
     Write-Host "."
     Send-Payload -payload $turn_hs_response -probe_host $probe_host -port $port
-    Start-Sleep -Seconds $test_interval
     Write-Host "."
     Send-Payload -payload $cookie_reply -probe_host $probe_host -port $port
-    Start-Sleep -Seconds $test_interval
     Write-Host "."
     Send-Payload -payload $turn_cookie_reply -probe_host $probe_host -port $port
-    Start-Sleep -Seconds $test_interval
     Write-Host "."
     Send-Payload -payload $data_message -probe_host $probe_host -port $port
-    Start-Sleep -Seconds $test_interval
     Write-Host "."
     Send-Payload -payload $turn_data_message -probe_host $probe_host -port $port
-    Start-Sleep -Seconds $test_interval
 
     Invoke-RestMethod -Method Post -Uri "$run_url/complete" -Headers @{Accept = 'text/plain'} -UseBasicParsing
 
