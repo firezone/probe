@@ -2,6 +2,9 @@
 
 set -e
 
+test_interval=0.7
+payload_interval=0.1
+
 # This script is intended to run from https://probe.sh and requires a valid
 # token to start. NOTE: Unfortunately only IPv4 is supported at this time.
 run_url=$1
@@ -20,6 +23,7 @@ send_payload() {
     payload=$1
     for i in 1 2 3; do
         echo "$payload" | base64 -d | nc -u -w 0 "$host" "$port"
+        sleep $payload_interval
     done
 }
 
@@ -48,28 +52,28 @@ echo "Running test against port $port..."
 
 # Run the test, sending each payload 3 times. It's UDP, after all.
 send_payload "$hs_init"
-sleep 1
+sleep $test_interval
 echo "."
 send_payload "$turn_hs_init"
-sleep 1
+sleep $test_interval
 echo "."
 send_payload "$hs_response"
-sleep 1
+sleep $test_interval
 echo "."
 send_payload "$turn_hs_response"
-sleep 1
+sleep $test_interval
 echo "."
 send_payload "$cookie_reply"
-sleep 1
+sleep $test_interval
 echo "."
 send_payload "$turn_cookie_reply"
-sleep 1
+sleep $test_interval
 echo "."
 send_payload "$data_message"
-sleep 1
+sleep $test_interval
 echo "."
 send_payload "$turn_data_message"
-sleep 1
+sleep $test_interval
 
 curl -4 -fsSL -H 'Accept: text/plain' -XPOST "$run_url/complete"
 
