@@ -246,9 +246,9 @@ defmodule Probe.Live.Index do
              final_checks.handshake_response &&
              final_checks.cookie_reply &&
              final_checks.data_message do
-          "✅ Test succeeded!"
+          "Test succeeded!"
         else
-          "❌ Test failed!"
+          "Test failed!"
         end
 
       {:noreply,
