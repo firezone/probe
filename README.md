@@ -9,7 +9,7 @@
 
 # Probe
 
-This repo contains the application source for https://probe.sh, a web service for testing WireGuard connectivity built by the team behind [Firezone](https://www.github.com/firezone/firezone).
+This repo contains the application source for https://probe.sh, a web service for testing WireGuard® connectivity built by the team behind [Firezone](https://www.github.com/firezone/firezone).
 
 ## How it works
 
@@ -68,3 +68,5 @@ See [SECURITY.md](SECURITY.md)
 ## FAQ
 
 See https://probe.sh/faq
+
+WireGuard ia 
