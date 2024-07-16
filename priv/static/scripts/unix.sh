@@ -12,7 +12,7 @@ run_url=$1
 # or some issue unrelated to the network occurs.
 cancel() {
     if [ "$?" -ne 0 ]; then
-        curl -4 -fsSL -H 'Accept: text/plain' -XPOST "$run_url/cancel"
+        curl -sL -H 'Accept: text/plain' -XPOST "$run_url/cancel"
     fi
 }
 trap cancel EXIT
@@ -27,7 +27,7 @@ send_payload() {
 }
 
 # Fetch the port and payloads to test with
-init_data=$(curl --fail -4 -fsSL -H 'Accept: text/plain' -XPOST "$1/start")
+init_data=$(curl -fsL -H 'Accept: text/plain' -XPOST "$1/start")
 
 # Parse space-delimited input
 set -- $init_data
@@ -43,7 +43,7 @@ turn_cookie_reply="$9"
 turn_data_message="${10}"
 
 if [ -z "$port" ]; then
-    echo "Failed to get a valid port from $run_url"
+    echo "Failed to get a valid port from test data. Exiting."
     exit 1
 fi
 
@@ -66,6 +66,8 @@ send_payload "$data_message"
 echo "."
 send_payload "$turn_data_message"
 
-curl -4 -fsSL -H 'Accept: text/plain' -XPOST "$run_url/complete"
+curl -sL -H 'Accept: text/plain' -XPOST "$run_url/complete"
 
-echo "Done! Test completed. View your results at $run_url"
+echo "Done! Test completed. Results:"
+echo
+curl -sL -H 'Accept: text/plain' "$run_url"

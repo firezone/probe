@@ -94,20 +94,28 @@ defmodule Probe.Controllers.Run do
            Phoenix.Token.verify(Probe.Endpoint, "topic", token, max_age: :infinity),
          {:ok, run} = Probe.Runs.fetch_run_by_topic(topic) do
       send_resp(conn, 200, ~s"""
-        Checks: #{inspect(run.checks)}
-        Started: #{run.started_at}
-        Ended: #{run.completed_at}
-        Port: #{run.port}
-        City: #{run.remote_ip_location_city}
-        Region: #{run.remote_ip_location_region}
-        Country: #{run.remote_ip_location_country}
-        Latitude: #{run.remote_ip_location_lat}
-        Longitude: #{run.remote_ip_location_lon}
+      Checks:
+        #{format_checks(run.checks)}
+      Started: #{run.started_at}
+      Ended: #{run.completed_at}
+      Port: #{run.port}
+      City: #{run.remote_ip_location_city}
+      Region: #{run.remote_ip_location_region}
+      Country: #{run.remote_ip_location_country}
+      Latitude: #{run.remote_ip_location_lat}
+      Longitude: #{run.remote_ip_location_lon}
       """)
     else
       _ ->
         send_resp(conn, 401, "invalid or expired token")
     end
+  end
+
+  defp format_checks(checks) do
+    checks
+    |> Map.from_struct()
+    |> Enum.map(fn {k, v} -> "#{k}: #{v}" end)
+    |> Enum.join("\n  ")
   end
 
   defp init_data(run) do

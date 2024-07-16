@@ -16,12 +16,11 @@ defmodule Probe.Router do
     post "/runs/:token/start", Probe.Controllers.Run, :start
     post "/runs/:token/complete", Probe.Controllers.Run, :complete
     post "/runs/:token/cancel", Probe.Controllers.Run, :cancel
+    get "/runs/:token", Probe.Controllers.Run, :show
   end
 
   scope "/", Probe do
     pipe_through :browser
-
-    get "/runs/:token", Controllers.Run, :show
 
     live "/", Live.Index, :run
     live "/stats", Live.Index, :stats_map
