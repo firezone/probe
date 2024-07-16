@@ -20,7 +20,7 @@ defmodule Probe.Live.Component.Run do
           Test your WireGuard connectivity
         </h1>
         <p class="underline text-gray-600 dark:text-gray-400 mt-4">
-          <i>No WireGuard client required!</i>
+          <i>No WireGuard® client required!</i>
         </p>
       </div>
       <%= if @os && @os =~ ~r/(Mac OS X|Windows|Linux|FreeBSD|OpenBSD)/ do %>

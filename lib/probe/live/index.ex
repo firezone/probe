@@ -168,133 +168,27 @@ defmodule Probe.Live.Index do
      )}
   end
 
-  def handle_info(:handshake_initiation, socket) do
-    checks = Map.put(socket.assigns.checks, :handshake_initiation, true)
-
-    {:noreply,
-     assign(socket,
-       checks: checks
-     )}
-  end
-
-  def handle_info(:handshake_response, socket) do
-    checks =
-      Map.put(socket.assigns.checks, :handshake_response, true)
-
-    {:noreply,
-     assign(socket,
-       checks: checks
-     )}
-  end
-
-  def handle_info(:cookie_reply, socket) do
-    checks =
-      Map.put(socket.assigns.checks, :cookie_reply, true)
-
-    {:noreply,
-     assign(socket,
-       checks: checks
-     )}
-  end
-
-  def handle_info(:data_message, socket) do
-    checks =
-      Map.put(socket.assigns.checks, :data_message, true)
-
-    {:noreply,
-     assign(socket,
-       checks: checks
-     )}
-  end
-
-  def handle_info(:turn_handshake_initiation, socket) do
-    checks = Map.put(socket.assigns.checks, :turn_handshake_initiation, true)
-
-    {:noreply,
-     assign(socket,
-       checks: checks
-     )}
-  end
-
-  def handle_info(:turn_handshake_response, socket) do
-    checks =
-      Map.put(socket.assigns.checks, :turn_handshake_response, true)
-
-    {:noreply,
-     assign(socket,
-       checks: checks
-     )}
-  end
-
-  def handle_info(:turn_cookie_reply, socket) do
-    checks =
-      Map.put(socket.assigns.checks, :turn_cookie_reply, true)
-
-    {:noreply,
-     assign(socket,
-       checks: checks
-     )}
-  end
-
-  def handle_info(:turn_data_message, socket) do
-    checks =
-      Map.put(socket.assigns.checks, :turn_data_message, true)
-
-    {:noreply,
-     assign(socket,
-       checks: checks
-     )}
+  def handle_info(:reset_token, socket) do
+    schedule_reset_token()
+    {:noreply, assign(socket, token: init(socket.assigns.topic, socket.assigns.port))}
   end
 
   def handle_info({:completed, run_id}, socket) do
-    final_checks = finalize_checks(socket)
-
-    with {:ok, run} <- Probe.Runs.fetch_run(run_id),
-         nil <- run.completed_at,
-         {:ok, run} <-
-           Probe.Runs.update_run(run, %{
-             checks: final_checks,
-             completed_at: DateTime.utc_now()
-           }) do
-      Probe.Stats.upsert(run)
-
-      status =
-        if final_checks.handshake_initiation &&
-             final_checks.handshake_response &&
-             final_checks.cookie_reply &&
-             final_checks.data_message do
-          "Test succeeded!"
-        else
-          "Test failed!"
-        end
-
-      {:noreply,
-       assign(socket,
-         status: status,
-         checks: final_checks
-       )}
-    else
-      _already_completed ->
-        # Most likely succeeded already
-        {:noreply, socket}
-    end
+    {:noreply, complete(run_id, socket)}
   end
 
   # Canceled by user, likely Ctrl+C or script error
   def handle_info({:canceled, run_id}, socket) do
-    final_checks = finalize_checks(socket)
-
     with {:ok, run} <- Probe.Runs.fetch_run(run_id),
          nil <- run.completed_at,
-         {:ok, run} <-
+         {:ok, _run} <-
            Probe.Runs.update_run(run, %{
-             checks: final_checks,
+             checks: socket.assigns.checks,
              completed_at: DateTime.utc_now()
            }) do
       {:noreply,
        assign(socket,
-         status: "Test canceled!",
-         run: run
+         status: "Test canceled!"
        )}
     else
       _already_canceled ->
@@ -302,9 +196,15 @@ defmodule Probe.Live.Index do
     end
   end
 
-  def handle_info(:reset_token, socket) do
-    schedule_reset_token()
-    {:noreply, assign(socket, token: init(socket.assigns.topic, socket.assigns.port))}
+  def handle_info({event, run_id}, socket) do
+    checks = Map.put(socket.assigns.checks, event, true)
+    socket = assign(socket, checks: checks)
+
+    if Enum.all?(checks, fn {_k, v} -> v end) do
+      {:noreply, complete(run_id, socket)}
+    else
+      {:noreply, socket}
+    end
   end
 
   def handle_event("port_change", %{"port" => port}, socket) do
@@ -322,14 +222,22 @@ defmodule Probe.Live.Index do
     })
   end
 
-  defp finalize_checks(socket) do
-    Enum.map(socket.assigns.checks, fn {k, v} ->
-      if !v do
-        {k, false}
-      else
-        {k, true}
-      end
-    end)
-    |> Enum.into(%{})
+  defp complete(run_id, socket) do
+    with {:ok, run} <- Probe.Runs.fetch_run(run_id),
+         nil <- run.completed_at,
+         {:ok, run} <-
+           Probe.Runs.update_run(run, %{
+             checks: socket.assigns.checks,
+             completed_at: DateTime.utc_now()
+           }) do
+      Probe.Stats.upsert(run)
+      assign(socket,
+        status: "Test succeeded!"
+      )
+    else
+      _already_completed ->
+        # Most likely succeeded already
+        socket
+    end
   end
 end

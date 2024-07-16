@@ -167,7 +167,7 @@ defmodule Probe.Runs.UdpServer do
   defp broadcast(run_id, event) do
     with {:ok, run_id} <- Ecto.UUID.load(run_id),
          {:ok, run} <- Runs.fetch_run(run_id) do
-      Probe.PubSub.broadcast("run:#{run.topic}", event)
+      Probe.PubSub.broadcast("run:#{run.topic}", {event, run_id})
     else
       _ -> {:error, :invalid_run_id}
     end

@@ -71,7 +71,26 @@ try {
     Write-Host "."
     Send-Payload -payload $turn_data_message -probe_host $probe_host -port $port
 
-    Invoke-RestMethod -Method Post -Uri "$run_url/complete" -Headers @{Accept = 'text/plain'} -UseBasicParsing
+# Wait for test to complete
+    Write-Output "Waiting for test to complete..."
+    $counter = 0
+    $max_attempts = 10
+    while ($counter -lt $max_attempts) {
+        $status = Invoke-RestMethod -Method Get -Uri "$run_url/status" -Headers @{Accept = 'text/plain'} -UseBasicParsing
+
+        if ($status -eq "done") {
+            break
+        }
+
+        Start-Sleep -Seconds 1
+        Write-Output "."
+        $counter++
+    }
+
+    if ($counter -eq $max_attempts) {
+        Write-Output "Test did not complete within time. Exiting."
+        exit 1
+    }
 
     $result = Invoke-RestMethod -Method Get -Uri "$run_url" -Headers @{Accept = 'text/plain'} -UseBasicParsing
     Write-Host "Done! Test completed. Results:"

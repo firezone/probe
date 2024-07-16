@@ -14,8 +14,8 @@ defmodule Probe.Router do
     plug :accepts, ["text"]
 
     post "/runs/:token/start", Probe.Controllers.Run, :start
-    post "/runs/:id/complete", Probe.Controllers.Run, :complete
     post "/runs/:id/cancel", Probe.Controllers.Run, :cancel
+    get "/runs/:id/status", Probe.Controllers.Run, :status
     get "/runs/:id", Probe.Controllers.Run, :show
   end
 

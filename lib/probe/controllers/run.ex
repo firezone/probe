@@ -45,10 +45,14 @@ defmodule Probe.Controllers.Run do
     end
   end
 
-  def complete(conn, %{"id" => id}) do
+  def status(conn, %{"id" => id}) do
     {:ok, run} = Probe.Runs.fetch_run(id)
-    Probe.PubSub.broadcast("run:#{run.topic}", {:completed, run.id})
-    send_resp(conn, 200, "")
+
+    if run.completed_at do
+      send_resp(conn, 200, "done")
+    else
+      send_resp(conn, 200, "running")
+    end
   end
 
   def cancel(conn, %{"id" => id}) do

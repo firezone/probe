@@ -12,7 +12,7 @@ start_url=$1
 # or some issue unrelated to the network occurs.
 cancel() {
     if [ "$?" -ne 0 ]; then
-        curl -sL -H 'Accept: text/plain' -XPOST "$run_url/cancel"
+        curl --silent --location --header 'Accept: text/plain' --request POST "$run_url/cancel"
     fi
 }
 trap cancel EXIT
@@ -27,7 +27,7 @@ send_payload() {
 }
 
 # Fetch the port and payloads to test with
-init_data=$(curl -fsL -H 'Accept: text/plain' -XPOST "$start_url/start")
+init_data=$(curl --fail --silent --location --header 'Accept: text/plain' --request POST "$start_url/start")
 
 # Parse space-delimited input
 set -- $init_data
@@ -67,8 +67,29 @@ send_payload "$data_message"
 echo "."
 send_payload "$turn_data_message"
 
-curl -sL -H 'Accept: text/plain' -XPOST "$run_url/complete"
+# Wait for test to complete
+echo "Waiting for test to complete..."
+counter=0
+max_retries=10
+while [ $counter -lt $max_retries ]; do
+    status=$(curl --location --silent --header 'Accept: text/plain' --request GET "$run_url/status")
 
-echo "Done! Test completed. Results:"
-echo
-curl -sL -H 'Accept: text/plain' "$run_url"
+    echo $status
+
+    if [ "$status" == "done" ]; then
+        break
+    fi
+
+    sleep 1
+    echo "."
+    counter=$((counter + 1))
+done
+
+if [ $counter -eq $max_retries ]; then
+    echo "Test did not complete in time. Exiting."
+    exit 1
+else
+    echo "Results:"
+    echo
+    curl --fail --silent --location --header 'Accept: text/plain' "$run_url"
+fi
