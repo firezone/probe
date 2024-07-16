@@ -4,8 +4,8 @@ defmodule Probe.Endpoint do
   @session_options [
     store: :cookie,
     key: "_probe_key",
-    signing_salt: "p//dOtPa",
-    encryption_salt: "p//dOtPa",
+    signing_salt: Application.compile_env!(:probe, [:session, :signing_salt]),
+    encryption_salt: Application.compile_env!(:probe, [:session, :encryption_salt]),
     same_site: "Lax"
   ]
 
