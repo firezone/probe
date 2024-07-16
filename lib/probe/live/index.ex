@@ -12,16 +12,31 @@ defmodule Probe.Live.Index do
     turn_data_message: nil
   }
 
+  @default_port 51_820
+
+  # This should match the token lifetime
+  @timer_ms 3_600_000
+
   def mount(_params, _session, socket) do
+    topic = :crypto.strong_rand_bytes(8) |> Base.url_encode64(padding: false)
+    :ok = Probe.PubSub.subscribe("run:#{topic}")
+
     os =
       case UAParser.parse(get_connect_info(socket, :user_agent)) do
         %UAParser.UA{os: %UAParser.OperatingSystem{family: os}} -> os
         _ -> "Unknown"
       end
 
+    if connected?(socket) do
+      schedule_reset_token()
+    end
+
     {:ok,
      assign(socket,
        checks: @default_checks,
+       topic: topic,
+       port: @default_port,
+       token: init(topic, @default_port),
        os: os,
        status: "Waiting for test to start..."
      )}
@@ -99,7 +114,9 @@ defmodule Probe.Live.Index do
             <.live_component
               module={Probe.Live.Component.Run}
               id="run"
+              token={@token}
               os={@os}
+              port={@port}
               status={@status}
               checks={@checks}
             />
@@ -147,7 +164,7 @@ defmodule Probe.Live.Index do
     {:noreply,
      assign(socket,
        checks: @default_checks,
-       status: "Test started!"
+       status: "Test running..."
      )}
   end
 
@@ -283,6 +300,26 @@ defmodule Probe.Live.Index do
       _already_canceled ->
         {:noreply, socket}
     end
+  end
+
+  def handle_info(:reset_token, socket) do
+    schedule_reset_token()
+    {:noreply, assign(socket, token: init(socket.assigns.topic, socket.assigns.port))}
+  end
+
+  def handle_event("port_change", %{"port" => port}, socket) do
+    {:noreply, assign(socket, token: init(socket.assigns.topic, port), port: port)}
+  end
+
+  defp schedule_reset_token() do
+    Process.send_after(self(), :reset_token, @timer_ms)
+  end
+
+  defp init(topic, port) do
+    Phoenix.Token.sign(Probe.Endpoint, "topic", %{
+      topic: topic,
+      port: port
+    })
   end
 
   defp finalize_checks(socket) do

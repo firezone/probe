@@ -30,24 +30,25 @@ function Send-Payload {
 # or some issue unrelated to the network occurs.
 try {
     # Fetch the port and payloads to test with
-    $init_data = Invoke-RestMethod -Method Post -Uri "$run_url/start" -Headers @{Accept = 'text/plain'} -UseBasicParsing
+    $init_data = Invoke-RestMethod -Method Post -Uri "$start_url/start" -Headers @{Accept = 'text/plain'} -UseBasicParsing
 
     # Parse space-delimited input
     $data = $init_data -split "`n"
 
-    $port = [int]$data[0]
-    $probe_host = $data[1]
-    $hs_init = $data[2]
-    $hs_response = $data[3]
-    $cookie_reply = $data[4]
-    $data_message = $data[5]
-    $turn_hs_init = $data[6]
-    $turn_hs_response = $data[7]
-    $turn_cookie_reply = $data[8]
-    $turn_data_message = $data[9]
+    $run_url = $data[0]
+    $port = [int]$data[1]
+    $probe_host = $data[2]
+    $hs_init = $data[3]
+    $hs_response = $data[4]
+    $cookie_reply = $data[5]
+    $data_message = $data[6]
+    $turn_hs_init = $data[7]
+    $turn_hs_response = $data[8]
+    $turn_cookie_reply = $data[9]
+    $turn_data_message = $data[10]
 
     if (-not $port) {
-        Write-Host "Failed to get a valid port from $run_url"
+        Write-Host "Failed to get a valid port from $start_url"
         exit 1
     }
 
@@ -72,7 +73,9 @@ try {
 
     Invoke-RestMethod -Method Post -Uri "$run_url/complete" -Headers @{Accept = 'text/plain'} -UseBasicParsing
 
-    Write-Host "Done! Test completed. View this result at $run_url"
+    $result = Invoke-RestMethod -Method Get -Uri "$run_url" -Headers @{Accept = 'text/plain'} -UseBasicParsing
+    Write-Host "Done! Test completed. Results:"
+    Write-Host $result
 }
 catch {
     Invoke-RestMethod -Method Post -Uri "$run_url/cancel" -Headers @{Accept = 'text/plain'} -UseBasicParsing

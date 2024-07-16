@@ -873,8 +873,8 @@ defmodule Probe.CoreComponents do
   end
 
   defp check_icon(nil), do: "hero-question-mark-circle"
-  defp check_icon(true), do: "hero-check-circle"
-  defp check_icon(false), do: "hero-x-circle"
+  defp check_icon(true), do: "hero-check-circle-solid"
+  defp check_icon(false), do: "hero-x-circle-solid"
 
   defp check_icon_class(nil), do: "text-gray-300 dark:text-gray-400 w-6 h-6"
   defp check_icon_class(true), do: "text-emerald-500 w-6 h-6"

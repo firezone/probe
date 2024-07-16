@@ -1,14 +1,10 @@
 defmodule Probe.Live.Component.Run do
   use Probe, :live_component
 
-  @default_port 51_820
-
   def mount(socket) do
     if connected?(socket) do
       {:ok,
        assign(socket,
-         token: init(@default_port),
-         default_port: @default_port,
          port_options: Application.fetch_env!(:probe, :port_options)
        )}
     else
@@ -150,13 +146,7 @@ defmodule Probe.Live.Component.Run do
           <h3 class="text-xl mb-4 font-semibold text-gray-900 dark:text-white">
             Step 2: Choose a port:
           </h3>
-          <.form
-            id="port-form"
-            for={%{}}
-            phx-change="port_change"
-            phx-target={@myself}
-            phx-hook="InitFlowbite"
-          >
+          <.form id="port-form" for={%{}} phx-change="port_change" phx-hook="InitFlowbite">
             <div class="mb-4">
               <div class="w-64">
                 <.input
@@ -164,7 +154,7 @@ defmodule Probe.Live.Component.Run do
                   name="port"
                   type="select"
                   options={@port_options}
-                  value={@default_port}
+                  value={@port}
                   phx-debounce="250"
                 />
               </div>
@@ -258,15 +248,13 @@ defmodule Probe.Live.Component.Run do
             </h3>
 
             <p class="pb-2 text-sm text-gray-500 dark:text-gray-400">
-              The table below will update in real-time as the test progresses.
+              The section below will update in real-time as the test progresses.
             </p>
 
             <hr />
 
             <div class="py-8">
-              <p class="text-lg text-gray-500 dark:text-gray-400">
-                Status: <span class="text-gray-900 dark:text-white"><%= @status %></span>
-              </p>
+              <pre class="rounded-lg bg-gray-900 dark:bg-gray-200 text-gray-200 dark:text-gray-900 p-6"><%= @status %></pre>
 
               <div class="mt-8 relative overflow-x-auto">
                 <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -373,7 +361,7 @@ defmodule Probe.Live.Component.Run do
 
   defp windows_cmd(token) do
     ~s"""
-    powershell -command "& { $run_url='#{url(~p"/runs/#{token}")}'; iwr -useb #{url(~p"/scripts/windows.ps1")} | iex }"
+    powershell -command "& { $start_url='#{url(~p"/runs/#{token}")}'; iwr -useb #{url(~p"/scripts/windows.ps1")} | iex }"
     """
   end
 
@@ -424,19 +412,5 @@ defmodule Probe.Live.Component.Run do
     else
       "dark:bg-gray-800 text-gray-900"
     end
-  end
-
-  def handle_event("port_change", %{"port" => port}, socket) do
-    {:noreply, assign(socket, token: init(port), port: port)}
-  end
-
-  defp init(port) do
-    topic = :crypto.strong_rand_bytes(8) |> Base.url_encode64(padding: false)
-    :ok = Probe.PubSub.subscribe("run:#{topic}")
-
-    Phoenix.Token.sign(Probe.Endpoint, "topic", %{
-      topic: topic,
-      port: port
-    })
   end
 end

@@ -6,7 +6,7 @@ payload_interval=0.2
 
 # This script is intended to run from https://probe.sh and requires a valid
 # token to start. NOTE: Unfortunately only IPv4 is supported at this time.
-run_url=$1
+start_url=$1
 
 # Cancel the test if a problem occurs. Avoids skewing results if the user cancels
 # or some issue unrelated to the network occurs.
@@ -27,20 +27,21 @@ send_payload() {
 }
 
 # Fetch the port and payloads to test with
-init_data=$(curl -fsL -H 'Accept: text/plain' -XPOST "$1/start")
+init_data=$(curl -fsL -H 'Accept: text/plain' -XPOST "$start_url/start")
 
 # Parse space-delimited input
 set -- $init_data
-port="$1"
-host="$2"
-hs_init="$3"
-hs_response="$4"
-cookie_reply="$5"
-data_message="$6"
-turn_hs_init="$7"
-turn_hs_response="$8"
-turn_cookie_reply="$9"
-turn_data_message="${10}"
+run_url="$1"
+port="$2"
+host="$3"
+hs_init="$4"
+hs_response="$5"
+cookie_reply="$6"
+data_message="$7"
+turn_hs_init="$8"
+turn_hs_response="$9"
+turn_cookie_reply="${10}"
+turn_data_message="${11}"
 
 if [ -z "$port" ]; then
     echo "Failed to get a valid port from test data. Exiting."
