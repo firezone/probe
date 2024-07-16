@@ -1,7 +1,7 @@
 # This script is intended to run from https://probe.sh and requires a valid
 # token to start. NOTE: Unfortunately only IPv4 is supported at this time.
 
-$payload_interval = 0.2
+$payload_interval = 200
 
 # Function to send payloads
 function Send-Payload {
@@ -21,7 +21,7 @@ function Send-Payload {
             Write-Host "Error sending payload: $_"
         } finally {
             $udpClient.Close()
-            Start-Sleep -Seconds $payload_interval
+            Start-Sleep -Milliseconds $payload_interval
         }
     }
 }
