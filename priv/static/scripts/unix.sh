@@ -12,7 +12,7 @@ start_url=$1
 # or some issue unrelated to the network occurs.
 cancel() {
     if [ "$?" -ne 0 ]; then
-        curl -sL -H 'Accept: text/plain' -XPOST "$run_url/cancel"
+        curl --silent --location --header 'Accept: text/plain' --request POST "$run_url/cancel"
     fi
 }
 trap cancel EXIT
@@ -27,7 +27,7 @@ send_payload() {
 }
 
 # Fetch the port and payloads to test with
-init_data=$(curl -fsL -H 'Accept: text/plain' -XPOST "$start_url/start")
+init_data=$(curl --fail --silent --location --header 'Accept: text/plain' --request POST "$start_url/start")
 
 # Parse space-delimited input
 set -- $init_data
