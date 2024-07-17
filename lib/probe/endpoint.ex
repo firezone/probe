@@ -1,5 +1,6 @@
 defmodule Probe.Endpoint do
   use Phoenix.Endpoint, otp_app: :probe
+  use Sentry.PlugCapture
 
   @session_options [
     store: :cookie,
@@ -44,6 +45,7 @@ defmodule Probe.Endpoint do
     pass: ["*/*"],
     json_decoder: Phoenix.json_library()
 
+  plug Sentry.PlugContext
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options

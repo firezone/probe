@@ -22,7 +22,7 @@ defmodule Probe.Router do
   scope "/", Probe do
     pipe_through :browser
 
-    live_session :public do
+    live_session :public, on_mount: [Sentry.LiveViewHook] do
       live "/", Live.Index, :run
       live "/stats", Live.Index, :stats_map
       live "/stats/map", Live.Index, :stats_map

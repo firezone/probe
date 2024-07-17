@@ -63,6 +63,8 @@ defmodule Probe.MixProject do
       {:logger_json, "~> 6.0"},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
+      {:sentry, "~> 10.6"},
+      {:hackney, "~> 1.20"},
 
       # Other
       {:jason, "~> 1.2"},

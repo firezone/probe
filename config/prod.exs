@@ -51,5 +51,12 @@ config :probe,
     {"60000", 60000}
   ]
 
+config :sentry,
+  dsn:
+    "https://1cf78c8aac016a34f514870826c3d3d4@o4507618546679808.ingest.us.sentry.io/4507618547335168",
+  environment_name: Mix.env(),
+  enable_source_code_context: true,
+  root_source_code_paths: [File.cwd!()]
+
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.
