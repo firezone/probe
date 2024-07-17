@@ -109,8 +109,12 @@ defmodule Probe.Controllers.Run do
 
   defp get_client_ip(conn) do
     case Plug.Conn.get_req_header(conn, "fly-client-ip") do
-      [ip | _] -> :inet.parse_address(Kernel.to_charlist(ip))
-      [] -> conn.remote_ip
+      [ip | _] ->
+        {:ok, ip_tuple} = :inet.parse_address(Kernel.to_charlist(ip))
+        ip_tuple
+
+      [] ->
+        conn.remote_ip
     end
   end
 
