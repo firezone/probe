@@ -7,10 +7,13 @@ defmodule Probe.Controllers.Run do
   action_fallback Probe.Controllers.Fallback
 
   def start(conn, %{"token" => token}) do
-    with {:ok, %{pid: pid, port: port} = t} <- Token.verify(token) do
-      {city, region, country, latitude, longitude, provider} = get_remote_ip_location(conn)
+    with {:ok, %{session_id: session_id, pid: pid, port: port}} <- Token.verify(token) do
+      remote_ip = get_client_ip(conn)
+      anonymized_id = get_anonymized_id(session_id, remote_ip)
+      {city, region, country, latitude, longitude, provider} = geolocate_ip(remote_ip)
 
       attrs = %{
+        anonymized_id: anonymized_id,
         port: port,
         remote_ip_location_country: country,
         remote_ip_location_region: region,
@@ -60,8 +63,22 @@ defmodule Probe.Controllers.Run do
     """)
   end
 
-  defp get_remote_ip_location(conn) do
-    remote_ip = get_client_ip(conn)
+  defp get_anonymized_id(session_id, remote_ip) do
+    anonymized_remote_ip =
+      remote_ip
+      |> Tuple.to_list()
+      |> Enum.sum()
+      |> to_string()
+
+    today =
+      Date.utc_today()
+      |> Date.to_iso8601()
+
+    :crypto.hash(:sha256, session_id <> anonymized_remote_ip <> today)
+    |> Base.encode64(padding: false)
+  end
+
+  defp geolocate_ip(remote_ip) do
     result = Geolix.lookup(remote_ip, [])
     region = get_in(result.city.continent.name)
     country = get_in(result.city.country.iso_code) || "Unknown"
@@ -74,7 +91,7 @@ defmodule Probe.Controllers.Run do
 
   defp get_client_ip(conn) do
     case Plug.Conn.get_req_header(conn, "fly-client-ip") do
-      [ip | _] -> ip
+      [ip | _] -> :inet.parse_address(Kernel.to_charlist(ip))
       [] -> conn.remote_ip
     end
   end

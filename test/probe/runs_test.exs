@@ -23,7 +23,8 @@ defmodule Probe.RunsRun do
 
       assert errors_on(changeset) == %{
                port: ["can't be blank"],
-               remote_ip_location_country: ["can't be blank"]
+               remote_ip_location_country: ["can't be blank"],
+               anonymized_id: ["can't be blank"]
              }
     end
 

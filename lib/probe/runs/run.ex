@@ -9,12 +9,11 @@ defmodule Probe.Runs.Run do
     field :remote_ip_location_lon, :float
     field :remote_ip_provider, :string
 
-    # TODO:
     # We have to store the some anonymized identifier to prevent the user from submitting
     # multiple runs and skewing the statistics. We can't use the IP address directly because
     # it's PII. So instead we store sum of IP address components along with a unique string
     # stored in the user's browser.
-    # field :anonymized_id, :string
+    field :anonymized_id, :string
 
     field :port, :integer
     embeds_one :checks, Probe.Runs.Checks, on_replace: :delete
@@ -65,12 +64,14 @@ defmodule Probe.Runs.Run do
       :remote_ip_location_lat,
       :remote_ip_location_lon,
       :remote_ip_provider,
+      :anonymized_id,
       :port,
       :started_at,
       :completed_at
     ])
     |> cast_embed(:checks, required: true)
     |> validate_required([
+      :anonymized_id,
       :remote_ip_location_country,
       :port
     ])

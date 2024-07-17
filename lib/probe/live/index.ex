@@ -5,16 +5,17 @@ defmodule Probe.Live.Index do
 
   @default_port 51_820
 
-  def mount(_params, _session, socket) do
+  def mount(_params, %{"session_id" => session_id}, socket) do
     if connected?(socket) do
       schedule_reset_token()
     end
 
     assigns =
       assign(socket,
+        session_id: session_id,
         os: get_default_os_family(socket),
         port: @default_port,
-        token: sign_token(@default_port),
+        token: sign_token(session_id, @default_port),
         status: "Waiting for test to start...",
         run: nil
       )
@@ -200,18 +201,18 @@ defmodule Probe.Live.Index do
 
   def handle_info(:reset_token, socket) do
     schedule_reset_token()
-    {:noreply, assign(socket, token: sign_token(socket.assigns.port))}
+    {:noreply, assign(socket, token: sign_token(socket.assigns.session_id, socket.assigns.port))}
   end
 
   def handle_event("port_change", %{"port" => port}, socket) do
-    {:noreply, assign(socket, token: sign_token(port), port: port)}
+    {:noreply, assign(socket, token: sign_token(socket.assigns.session_id, port), port: port)}
   end
 
   defp schedule_reset_token() do
     Process.send_after(self(), :reset_token, Token.expiration_ms())
   end
 
-  defp sign_token(port) do
-    Token.sign(%{pid: self(), port: port})
+  defp sign_token(session_id, port) do
+    Token.sign(%{session_id: session_id, pid: self(), port: port})
   end
 end
