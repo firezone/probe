@@ -55,6 +55,7 @@ defmodule Probe.Runs do
   def pass_run_check(run_id, check) do
     from(run in Run, as: :runs)
     |> where([runs: runs], runs.id == ^run_id)
+    |> where([runs: runs], is_nil(runs.completed_at) and is_nil(runs.canceled_at))
     |> update([runs: runs],
       set: [checks: fragment("jsonb_set(?, ?, 'true'::jsonb)", runs.checks, [^to_string(check)])]
     )
@@ -69,7 +70,7 @@ defmodule Probe.Runs do
     end
   end
 
-  def complete_run(%Run{} = run) do
+  def complete_run(%Run{completed_at: nil, canceled_at: nil} = run) do
     run
     |> Run.complete_changeset()
     |> Repo.update()
@@ -84,7 +85,11 @@ defmodule Probe.Runs do
     end
   end
 
-  def cancel_run(%Run{} = run) do
+  def complete_run(%Run{} = run) do
+    {:ok, run}
+  end
+
+  def cancel_run(%Run{completed_at: nil, canceled_at: nil} = run) do
     run
     |> Run.cancel_changeset()
     |> Repo.update()
@@ -96,6 +101,10 @@ defmodule Probe.Runs do
       {:error, reason} ->
         {:error, reason}
     end
+  end
+
+  def cancel_run(%Run{} = run) do
+    {:ok, run}
   end
 
   def cancel_stale_runs! do

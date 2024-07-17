@@ -7,7 +7,8 @@ defmodule Probe.Controllers.Run do
   action_fallback Probe.Controllers.Fallback
 
   def start(conn, %{"token" => token}) do
-    with {:ok, %{session_id: session_id, pid: pid, port: port}} <- Token.verify(token) do
+    with {:ok, %{session_id: session_id, pid: pid, port: port}} <- Token.verify(token),
+         true <- Process.alive?(pid) do
       remote_ip = get_client_ip(conn)
       anonymized_id = get_anonymized_id(session_id, remote_ip)
       {city, region, country, latitude, longitude, provider} = geolocate_ip(remote_ip)
@@ -27,6 +28,9 @@ defmodule Probe.Controllers.Run do
 
       send_resp(conn, 200, init_data(run))
     else
+      false ->
+        send_resp(conn, 401, "please obtain a new token and don't close the browser window")
+
       error ->
         Logger.error("Failed to start run: #{inspect(error)}")
         send_resp(conn, 401, "invalid or expired token")
