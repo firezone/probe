@@ -1,10 +1,10 @@
 defmodule Probe.Live.Component.Results do
   use Probe, :live_component
-  alias Probe.Stats
+  alias Probe.Runs
 
   def mount(socket) do
     if connected?(socket) do
-      stats = Stats.country_stats()
+      stats = Runs.country_stats()
       {:ok, assign(socket, :stats, stats)}
     else
       {:ok, assign(socket, :stats, nil)}

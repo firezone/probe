@@ -1,9 +1,8 @@
 defmodule Probe.Runs do
   use Supervisor
   import Ecto.Query
-  alias Probe.{Repo, PubSub}
-  alias Probe.Stats
-  alias Probe.Runs.{Run, UDPServer, TimeoutServer}
+  alias Probe.{Repo, PubSub, RecurrentJob}
+  alias Probe.Runs.{Run, UDPServer, Views}
 
   def start_link(opts) do
     Supervisor.start_link(__MODULE__, opts, name: __MODULE__.Supervisor)
@@ -16,11 +15,12 @@ defmodule Probe.Runs do
         {UDPServer, [port: port]}
       end)
 
-    other_children = [
-      TimeoutServer
+    recurrent_jobs = [
+      {RecurrentJob, every: :timer.seconds(1), run: &cancel_stale_runs!/0},
+      {RecurrentJob, every: :timer.minutes(5), run: &reset_materialized_views!/0}
     ]
 
-    Supervisor.init(udp_servers ++ other_children, strategy: :one_for_one)
+    Supervisor.init(udp_servers ++ recurrent_jobs, strategy: :one_for_one)
   end
 
   def fetch_run(id) do
@@ -76,7 +76,6 @@ defmodule Probe.Runs do
     |> Repo.update()
     |> case do
       {:ok, run} ->
-        Stats.upsert(run)
         broadcast_run_event(run, {:completed, run})
         {:ok, run}
 
@@ -114,6 +113,16 @@ defmodule Probe.Runs do
     |> where([runs: runs], fragment("? < NOW() - INTERVAL '15 seconds'", runs.started_at))
     |> Repo.all()
     |> Enum.each(&cancel_run/1)
+  end
+
+  def country_stats do
+    from(s in Views.CountryStats)
+    |> Repo.all()
+  end
+
+  def reset_materialized_views! do
+    Repo.query!("REFRESH MATERIALIZED VIEW CONCURRENTLY country_stats_mv;")
+    :ok
   end
 
   defp run_topic(%Run{} = run), do: run_topic(run.id)
