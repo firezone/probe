@@ -14,10 +14,13 @@ defmodule Probe.Live.Component.Results do
   def render(assigns) do
     ~H"""
     <div class="max-w-screen-xl mx-auto">
-      <div class="flex justify-center mb-8">
+      <div class="text-center mb-8">
         <h1 class="text-4xl font-bold text-gray-800 dark:text-gray-200">
           Global WireGuard connectivity statistics
         </h1>
+        <p class="pb-2 text-sm text-gray-500 dark:text-gray-400">
+          Updated every 5 minutes.
+        </p>
       </div>
       <div class="flex w-full justify-center mb-8">
         <div class="inline-flex rounded-md shadow-sm" role="group">
