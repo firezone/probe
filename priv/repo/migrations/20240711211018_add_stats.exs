@@ -2,36 +2,23 @@ defmodule Probe.Repo.Migrations.AddStats do
   use Ecto.Migration
 
   def change do
-    create table(:country_stats) do
-      add :country, :string, null: false, unique: true
-      add :num_runs, :integer
-      add :num_succeeded, :integer
+    execute("""
+    CREATE MATERIALIZED VIEW country_stats_mv AS
+      SELECT remote_ip_location_country AS country,
+             COUNT(DISTINCT CASE
+               WHEN checks @> '{"cookie_reply":true,"data_message":true,"turn_cookie_reply":true,"turn_data_message":true}'::jsonb THEN anonymized_id
+              END) AS num_succeeded,
+             COUNT(DISTINCT anonymized_id) AS num_completed,
+             NOW() AS updated_at
+      FROM runs
+      WHERE completed_at IS NOT NULL
+        AND canceled_at IS NULL
+        AND remote_ip_location_country IS NOT NULL
+        AND remote_ip_location_country != 'Unknown'
+      GROUP BY remote_ip_location_country
+      ORDER BY remote_ip_location_country ASC;
+    """)
 
-      timestamps(type: :utc_datetime_usec)
-    end
-
-    create table(:region_stats) do
-      add :region, :string, null: false, unique: true
-      add :num_runs, :integer
-      add :num_succeeded, :integer
-
-      timestamps(type: :utc_datetime_usec)
-    end
-
-    create table(:city_stats) do
-      add :city, :string, null: false, unique: true
-      add :num_runs, :integer
-      add :num_succeeded, :integer
-
-      timestamps(type: :utc_datetime_usec)
-    end
-
-    create table(:provider_stats) do
-      add :provider, :string, null: false, unique: true
-      add :num_runs, :integer
-      add :num_succeeded, :integer
-
-      timestamps(type: :utc_datetime_usec)
-    end
+    execute("CREATE UNIQUE INDEX country_stats_mv_country_idx ON country_stats_mv (country ASC);")
   end
 end

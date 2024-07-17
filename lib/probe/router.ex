@@ -22,11 +22,13 @@ defmodule Probe.Router do
   scope "/", Probe do
     pipe_through :browser
 
-    live "/", Live.Index, :run
-    live "/stats", Live.Index, :stats_map
-    live "/stats/map", Live.Index, :stats_map
-    live "/stats/list", Live.Index, :stats_list
-    live "/faq", Live.Index, :faq
+    live_session :public do
+      live "/", Live.Index, :run
+      live "/stats", Live.Index, :stats_map
+      live "/stats/map", Live.Index, :stats_map
+      live "/stats/list", Live.Index, :stats_list
+      live "/faq", Live.Index, :faq
+    end
   end
 
   # Enable LiveDashboard in development

@@ -4,8 +4,8 @@ defmodule Probe.Endpoint do
   @session_options [
     store: :cookie,
     key: "_probe_key",
-    signing_salt: "p//dOtPa",
-    encryption_salt: "p//dOtPa",
+    signing_salt: Application.compile_env!(:probe, [:session, :signing_salt]),
+    encryption_salt: Application.compile_env!(:probe, [:session, :encryption_salt]),
     same_site: "Lax"
   ]
 
@@ -47,5 +47,15 @@ defmodule Probe.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
+  plug :fetch_session
+  plug :put_session_id
   plug Probe.Router
+
+  def put_session_id(conn, _opts) do
+    if Plug.Conn.get_session(conn, :session_id) do
+      conn
+    else
+      Plug.Conn.put_session(conn, :session_id, Ecto.UUID.generate())
+    end
+  end
 end

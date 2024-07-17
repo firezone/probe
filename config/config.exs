@@ -43,6 +43,10 @@ config :probe, Probe.Endpoint,
   pubsub_server: Probe.PubSub,
   live_view: [signing_salt: "0PeI+5mX"]
 
+config :probe, :session,
+  signing_salt: "p//dOtPa",
+  encryption_salt: "p//dOtPa"
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.17.11",

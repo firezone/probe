@@ -12,7 +12,16 @@ defmodule Probe.Repo.Migrations.CreateRuns do
       add :remote_ip_location_lon, :float
       add :remote_ip_provider, :string
 
-      timestamps(type: :utc_datetime_usec)
+      add :port, :integer, null: false
+      add :checks, :map, null: false
+
+      add :anonymized_id, :string, null: false
+
+      timestamps(type: :utc_datetime_usec, inserted_at: :started_at)
+      add :canceled_at, :utc_datetime_usec
+      add :completed_at, :utc_datetime_usec
     end
+
+    create index(:runs, [:started_at], where: "completed_at IS NULL AND canceled_at IS NULL")
   end
 end

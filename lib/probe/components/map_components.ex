@@ -10106,19 +10106,19 @@ defmodule Probe.MapComponents do
     stats
     |> Enum.map_join("\n", fn %{
                                 country: country,
-                                num_runs: num_runs,
+                                num_completed: num_completed,
                                 num_succeeded: num_succeeded
                               } ->
       """
       .#{String.downcase(country)} {
-        fill: #{fill(num_runs, num_succeeded)};
+        fill: #{fill(num_completed, num_succeeded)};
       }
       """
     end)
   end
 
-  defp fill(num_runs, num_succeeded) do
-    case num_succeeded / num_runs do
+  defp fill(num_completed, num_succeeded) do
+    case num_succeeded / num_completed do
       rate when rate < 0.1 -> "#8b0000"
       rate when rate < 0.2 -> "#B22222"
       rate when rate < 0.3 -> "#DC143C"

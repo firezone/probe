@@ -1,59 +1,65 @@
 defmodule Probe.Controllers.Run do
   use Probe, :controller
+  alias Probe.Token
+  alias Probe.Runs
   require Logger
-  alias Probe.Runs.UdpServer
-
-  @run_timeout 15_000
-
-  # 1 hour
-  @token_max_age 3600
 
   action_fallback Probe.Controllers.Fallback
 
   def start(conn, %{"token" => token}) do
-    with {:ok, %{topic: topic, port: port} = attrs} <-
-           Phoenix.Token.verify(Probe.Endpoint, "topic", token, max_age: @token_max_age) do
-      Probe.PubSub.broadcast("run:#{topic}", :started)
+    with {:ok, %{session_id: session_id, pid: pid, port: port}} <- Token.verify(token),
+         true <- Process.alive?(pid) do
+      remote_ip = get_client_ip(conn)
+      anonymized_id = get_anonymized_id(session_id, remote_ip)
+      {city, region, country, latitude, longitude, provider} = geolocate_ip(remote_ip)
 
-      {city, region, country, latitude, longitude, provider} = get_remote_ip_location(conn)
+      attrs = %{
+        anonymized_id: anonymized_id,
+        port: port,
+        remote_ip_location_country: country,
+        remote_ip_location_region: region,
+        remote_ip_location_city: city,
+        remote_ip_location_lat: latitude,
+        remote_ip_location_lon: longitude,
+        remote_ip_provider: provider
+      }
 
-      attrs =
-        Map.merge(attrs, %{
-          port: port,
-          topic: topic,
-          checks: %{},
-          remote_ip_location_country: country,
-          remote_ip_location_region: region,
-          remote_ip_location_city: city,
-          remote_ip_location_lat: latitude,
-          remote_ip_location_lon: longitude,
-          remote_ip_provider: provider
-        })
-
-      {:ok, run} = Probe.Runs.start_run(attrs)
-
-      Task.start(fn ->
-        Process.sleep(@run_timeout)
-        Probe.PubSub.broadcast("run:#{topic}", {:completed, run.id})
-      end)
+      {:ok, run} = Probe.Runs.start_run(pid, attrs)
 
       send_resp(conn, 200, init_data(run))
     else
+      false ->
+        send_resp(
+          conn,
+          401,
+          """
+          Error: You are using an invalid or expired token.
+
+          Please visit the https://probe.sh website to generate a new token
+          and don't close the page until the test is completed.
+          """
+        )
+
       error ->
-        Logger.error("Failed to start run: #{inspect(error)}")
-        send_resp(conn, 401, "invalid or expired token")
+        Logger.warning("Failed to start run: #{inspect(error)}")
+
+        send_resp(conn, 401, """
+        Error: You are using an invalid or expired token.
+
+        Please visit the https://probe.sh website to generate a new token.
+        """)
     end
   end
 
   def complete(conn, %{"id" => id}) do
     {:ok, run} = Probe.Runs.fetch_run(id)
-    Probe.PubSub.broadcast("run:#{run.topic}", {:completed, run.id})
+    Probe.Runs.complete_run(run)
     send_resp(conn, 200, "")
   end
 
   def cancel(conn, %{"id" => id}) do
     {:ok, run} = Probe.Runs.fetch_run(id)
-    Probe.PubSub.broadcast("run:#{run.topic}", {:canceled, run.id})
+    Probe.Runs.cancel_run(run)
     send_resp(conn, 200, "")
   end
 
@@ -75,8 +81,22 @@ defmodule Probe.Controllers.Run do
     """)
   end
 
-  defp get_remote_ip_location(conn) do
-    remote_ip = get_client_ip(conn)
+  defp get_anonymized_id(session_id, remote_ip) do
+    anonymized_remote_ip =
+      remote_ip
+      |> Tuple.to_list()
+      |> Enum.sum()
+      |> to_string()
+
+    today =
+      Date.utc_today()
+      |> Date.to_iso8601()
+
+    :crypto.hash(:sha256, session_id <> anonymized_remote_ip <> today)
+    |> Base.encode64(padding: false)
+  end
+
+  defp geolocate_ip(remote_ip) do
     result = Geolix.lookup(remote_ip, [])
     region = get_in(result.city.continent.name)
     country = get_in(result.city.country.iso_code) || "Unknown"
@@ -89,7 +109,7 @@ defmodule Probe.Controllers.Run do
 
   defp get_client_ip(conn) do
     case Plug.Conn.get_req_header(conn, "fly-client-ip") do
-      [ip | _] -> ip
+      [ip | _] -> :inet.parse_address(Kernel.to_charlist(ip))
       [] -> conn.remote_ip
     end
   end
@@ -108,14 +128,14 @@ defmodule Probe.Controllers.Run do
     #{url(~p"/runs/#{run.id}")}
     #{run.port}
     #{:inet.ntoa(ip)}
-    #{Base.encode64(UdpServer.generate_handshake_initiation_payload(run))}
-    #{Base.encode64(UdpServer.generate_handshake_response_payload(run))}
-    #{Base.encode64(UdpServer.generate_cookie_reply_payload(run))}
-    #{Base.encode64(UdpServer.generate_data_message_payload(run))}
-    #{Base.encode64(UdpServer.generate_turn_handshake_initiation_payload(run))}
-    #{Base.encode64(UdpServer.generate_turn_handshake_response_payload(run))}
-    #{Base.encode64(UdpServer.generate_turn_cookie_reply_payload(run))}
-    #{Base.encode64(UdpServer.generate_turn_data_message_payload(run))}
+    #{Base.encode64(Runs.UDPServer.generate_handshake_initiation_payload(run))}
+    #{Base.encode64(Runs.UDPServer.generate_handshake_response_payload(run))}
+    #{Base.encode64(Runs.UDPServer.generate_cookie_reply_payload(run))}
+    #{Base.encode64(Runs.UDPServer.generate_data_message_payload(run))}
+    #{Base.encode64(Runs.UDPServer.generate_turn_handshake_initiation_payload(run))}
+    #{Base.encode64(Runs.UDPServer.generate_turn_handshake_response_payload(run))}
+    #{Base.encode64(Runs.UDPServer.generate_turn_cookie_reply_payload(run))}
+    #{Base.encode64(Runs.UDPServer.generate_turn_data_message_payload(run))}
     """
   end
 end
