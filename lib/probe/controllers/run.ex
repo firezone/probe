@@ -112,7 +112,9 @@ defmodule Probe.Controllers.Run do
       [ip | _] ->
         {:ok, ip_tuple} = :inet.parse_address(Kernel.to_charlist(ip))
         ip_tuple
-      [] -> conn.remote_ip
+
+      [] ->
+        conn.remote_ip
     end
   end
 
