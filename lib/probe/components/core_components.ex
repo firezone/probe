@@ -475,7 +475,7 @@ defmodule Probe.CoreComponents do
           <textarea
             id={"copy-text-input-#{@comp_id}"}
             class="cursor-text bg-gray-50 border border-gray-300 font-medium text-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pr-10 bg-white dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            rows="5"
+            rows="6"
             disabled
             readonly
           ><%= @value %></textarea>
