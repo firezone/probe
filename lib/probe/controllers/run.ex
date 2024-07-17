@@ -29,11 +29,25 @@ defmodule Probe.Controllers.Run do
       send_resp(conn, 200, init_data(run))
     else
       false ->
-        send_resp(conn, 401, "please obtain a new token and don't close the browser window")
+        send_resp(
+          conn,
+          401,
+          """
+          Error: You are using an invalid or expired token.
+
+          Please visit the https://probe.sh website to generate a new token
+          and don't close the page until the test is completed.
+          """
+        )
 
       error ->
-        Logger.error("Failed to start run: #{inspect(error)}")
-        send_resp(conn, 401, "invalid or expired token")
+        Logger.warning("Failed to start run: #{inspect(error)}")
+
+        send_resp(conn, 401, """
+        Error: You are using an invalid or expired token.
+
+        Please visit the https://probe.sh website to generate a new token.
+        """)
     end
   end
 

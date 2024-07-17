@@ -27,7 +27,17 @@ send_payload() {
 }
 
 # Fetch the port and payloads to test with
-init_data=$(curl --fail --silent --location --header 'Accept: text/plain' --request POST "$start_url/start")
+init_data=$(curl --silent --location --header 'Accept: text/plain' --request POST "$start_url/start")
+
+if echo "$init_data" | grep -q "Error: "; then
+    echo "$init_data"
+    exit 1
+fi
+
+if [ -z "$init_data" ]; then
+    echo "Failed to get valid test data from the server. Exiting."
+    exit 1
+fi
 
 # Parse space-delimited input
 set -- $init_data
