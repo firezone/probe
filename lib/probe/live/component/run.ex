@@ -290,29 +290,29 @@ defmodule Probe.Live.Component.Run do
                       type="Handshake initiation"
                       header="0x01"
                       description="First message to initiate a tunnel"
-                      status={@checks.handshake_initiation}
-                      turn_status={@checks.turn_handshake_initiation}
+                      status={get_in(@run.checks.handshake_initiation)}
+                      turn_status={get_in(@run.checks.turn_handshake_initiation)}
                     />
                     <.check_row
                       type="Handshake response"
                       header="0x02"
                       description="Reply to the handshake initiation message"
-                      status={@checks.handshake_response}
-                      turn_status={@checks.turn_handshake_response}
+                      status={get_in(@run.checks.handshake_response)}
+                      turn_status={get_in(@run.checks.turn_handshake_response)}
                     />
                     <.check_row
                       type="Cookie reply"
                       header="0x03"
                       description="Used to mitigate DoS attacks"
-                      status={@checks.cookie_reply}
-                      turn_status={@checks.turn_cookie_reply}
+                      status={get_in(@run.checks.cookie_reply)}
+                      turn_status={get_in(@run.checks.turn_cookie_reply)}
                     />
                     <.check_row
                       type="Data message"
                       header="0x04"
                       description="The encrypted payload used to transport application data."
-                      status={@checks.data_message}
-                      turn_status={@checks.turn_data_message}
+                      status={get_in(@run.checks.data_message)}
+                      turn_status={get_in(@run.checks.turn_data_message)}
                     />
                   </tbody>
                 </table>

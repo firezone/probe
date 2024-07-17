@@ -27,10 +27,12 @@ defmodule Probe.ListComponents do
                 <%= stat.country %>
               </td>
               <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                <%= stat.num_runs %>
+                <%= stat.num_completed %>
               </td>
               <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                <%= :erlang.float_to_binary(stat.num_succeeded * 100 / stat.num_runs, decimals: 2) %>%
+                <%= :erlang.float_to_binary(stat.num_succeeded * 100 / stat.num_completed,
+                  decimals: 2
+                ) %>%
               </td>
             </tr>
           <% end %>

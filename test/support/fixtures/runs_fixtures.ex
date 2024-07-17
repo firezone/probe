@@ -13,11 +13,8 @@ defmodule Probe.Fixtures.Runs do
   end
 
   def start_run(attrs \\ %{}) do
-    {:ok, run} =
-      attrs
-      |> run_attrs()
-      |> Probe.Runs.start_run()
-
+    pid = self()
+    {:ok, run} = Probe.Runs.start_run(pid, run_attrs(attrs))
     run
   end
 end

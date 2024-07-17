@@ -1,45 +1,32 @@
 defmodule Probe.Live.Index do
   use Probe, :live_view
-
-  @default_checks %{
-    handshake_initiation: nil,
-    handshake_response: nil,
-    cookie_reply: nil,
-    data_message: nil,
-    turn_handshake_initiation: nil,
-    turn_handshake_response: nil,
-    turn_cookie_reply: nil,
-    turn_data_message: nil
-  }
+  alias Probe.Token
+  alias Probe.Runs
 
   @default_port 51_820
 
-  # This should match the token lifetime
-  @timer_ms 3_600_000
-
   def mount(_params, _session, socket) do
-    topic = :crypto.strong_rand_bytes(8) |> Base.url_encode64(padding: false)
-    :ok = Probe.PubSub.subscribe("run:#{topic}")
-
-    os =
-      case UAParser.parse(get_connect_info(socket, :user_agent)) do
-        %UAParser.UA{os: %UAParser.OperatingSystem{family: os}} -> os
-        _ -> "Unknown"
-      end
-
     if connected?(socket) do
       schedule_reset_token()
     end
 
-    {:ok,
-     assign(socket,
-       checks: @default_checks,
-       topic: topic,
-       port: @default_port,
-       token: init(topic, @default_port),
-       os: os,
-       status: "Waiting for test to start..."
-     )}
+    assigns =
+      assign(socket,
+        os: get_default_os_family(socket),
+        port: @default_port,
+        token: sign_token(@default_port),
+        status: "Waiting for test to start...",
+        run: nil
+      )
+
+    {:ok, assigns}
+  end
+
+  defp get_default_os_family(socket) do
+    case UAParser.parse(get_connect_info(socket, :user_agent)) do
+      %UAParser.UA{os: %UAParser.OperatingSystem{family: os}} -> os
+      _ -> "Unknown"
+    end
   end
 
   def render(assigns) do
@@ -118,7 +105,7 @@ defmodule Probe.Live.Index do
               os={@os}
               port={@port}
               status={@status}
-              checks={@checks}
+              run={@run}
             />
           <% end %>
           <%= if @live_action in [:stats_map, :stats_list] do %>
@@ -160,176 +147,71 @@ defmodule Probe.Live.Index do
     end
   end
 
-  def handle_info(:started, socket) do
-    {:noreply,
-     assign(socket,
-       checks: @default_checks,
-       status: "Test running..."
-     )}
+  def handle_info({:run_started, run}, socket) do
+    :ok = Runs.subscribe_to_run_updates(run)
+
+    socket =
+      assign(socket,
+        status: "Test running...",
+        run: run
+      )
+
+    {:noreply, socket}
   end
 
-  def handle_info(:handshake_initiation, socket) do
-    checks = Map.put(socket.assigns.checks, :handshake_initiation, true)
+  def handle_info({:check_passed, run_id, check}, socket) do
+    if socket.assigns.run.id == run_id do
+      socket =
+        assign(socket,
+          run: %{
+            socket.assigns.run
+            | checks: Map.put(socket.assigns.run.checks, check, true)
+          }
+        )
 
-    {:noreply,
-     assign(socket,
-       checks: checks
-     )}
-  end
-
-  def handle_info(:handshake_response, socket) do
-    checks =
-      Map.put(socket.assigns.checks, :handshake_response, true)
-
-    {:noreply,
-     assign(socket,
-       checks: checks
-     )}
-  end
-
-  def handle_info(:cookie_reply, socket) do
-    checks =
-      Map.put(socket.assigns.checks, :cookie_reply, true)
-
-    {:noreply,
-     assign(socket,
-       checks: checks
-     )}
-  end
-
-  def handle_info(:data_message, socket) do
-    checks =
-      Map.put(socket.assigns.checks, :data_message, true)
-
-    {:noreply,
-     assign(socket,
-       checks: checks
-     )}
-  end
-
-  def handle_info(:turn_handshake_initiation, socket) do
-    checks = Map.put(socket.assigns.checks, :turn_handshake_initiation, true)
-
-    {:noreply,
-     assign(socket,
-       checks: checks
-     )}
-  end
-
-  def handle_info(:turn_handshake_response, socket) do
-    checks =
-      Map.put(socket.assigns.checks, :turn_handshake_response, true)
-
-    {:noreply,
-     assign(socket,
-       checks: checks
-     )}
-  end
-
-  def handle_info(:turn_cookie_reply, socket) do
-    checks =
-      Map.put(socket.assigns.checks, :turn_cookie_reply, true)
-
-    {:noreply,
-     assign(socket,
-       checks: checks
-     )}
-  end
-
-  def handle_info(:turn_data_message, socket) do
-    checks =
-      Map.put(socket.assigns.checks, :turn_data_message, true)
-
-    {:noreply,
-     assign(socket,
-       checks: checks
-     )}
-  end
-
-  def handle_info({:completed, run_id}, socket) do
-    final_checks = finalize_checks(socket)
-
-    with {:ok, run} <- Probe.Runs.fetch_run(run_id),
-         nil <- run.completed_at,
-         {:ok, run} <-
-           Probe.Runs.update_run(run, %{
-             checks: final_checks,
-             completed_at: DateTime.utc_now()
-           }) do
-      Probe.Stats.upsert(run)
-
-      status =
-        if final_checks.handshake_initiation &&
-             final_checks.handshake_response &&
-             final_checks.cookie_reply &&
-             final_checks.data_message do
-          "Test succeeded!"
-        else
-          "Test failed!"
-        end
-
-      {:noreply,
-       assign(socket,
-         status: status,
-         checks: final_checks
-       )}
+      {:noreply, socket}
     else
-      _already_completed ->
-        # Most likely succeeded already
-        {:noreply, socket}
+      {:noreply, socket}
     end
+  end
+
+  def handle_info({:completed, run}, socket) do
+    {:ok, run} = Runs.fetch_run(run.id)
+
+    socket =
+      assign(socket,
+        status: "Test completed!",
+        run: run
+      )
+
+    {:noreply, socket}
   end
 
   # Canceled by user, likely Ctrl+C or script error
-  def handle_info({:canceled, run_id}, socket) do
-    final_checks = finalize_checks(socket)
+  def handle_info({:canceled, run}, socket) do
+    socket =
+      assign(socket,
+        status: "Test canceled!",
+        run: run
+      )
 
-    with {:ok, run} <- Probe.Runs.fetch_run(run_id),
-         nil <- run.completed_at,
-         {:ok, run} <-
-           Probe.Runs.update_run(run, %{
-             checks: final_checks,
-             completed_at: DateTime.utc_now()
-           }) do
-      {:noreply,
-       assign(socket,
-         status: "Test canceled!",
-         run: run
-       )}
-    else
-      _already_canceled ->
-        {:noreply, socket}
-    end
+    {:noreply, socket}
   end
 
   def handle_info(:reset_token, socket) do
     schedule_reset_token()
-    {:noreply, assign(socket, token: init(socket.assigns.topic, socket.assigns.port))}
+    {:noreply, assign(socket, token: sign_token(socket.assigns.port))}
   end
 
   def handle_event("port_change", %{"port" => port}, socket) do
-    {:noreply, assign(socket, token: init(socket.assigns.topic, port), port: port)}
+    {:noreply, assign(socket, token: sign_token(port), port: port)}
   end
 
   defp schedule_reset_token() do
-    Process.send_after(self(), :reset_token, @timer_ms)
+    Process.send_after(self(), :reset_token, Token.expiration_ms())
   end
 
-  defp init(topic, port) do
-    Phoenix.Token.sign(Probe.Endpoint, "topic", %{
-      topic: topic,
-      port: port
-    })
-  end
-
-  defp finalize_checks(socket) do
-    Enum.map(socket.assigns.checks, fn {k, v} ->
-      if !v do
-        {k, false}
-      else
-        {k, true}
-      end
-    end)
-    |> Enum.into(%{})
+  defp sign_token(port) do
+    Token.sign(%{pid: self(), port: port})
   end
 end

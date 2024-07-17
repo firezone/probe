@@ -20,7 +20,7 @@ defmodule Probe.Stats do
   end
 
   defp upsert_stats(schema, key, val, num_succeeded) do
-    changeset = schema.changeset(%{key => val, num_runs: 1, num_succeeded: num_succeeded})
+    changeset = schema.changeset(%{key => val, num_completed: 1, num_succeeded: num_succeeded})
 
     {:ok, _stat} =
       Probe.Repo.insert(changeset,
@@ -49,7 +49,7 @@ defmodule Probe.Stats do
       update: [
         set: [updated_at: ^DateTime.utc_now()],
         inc: [
-          num_runs: 1,
+          num_completed: 1,
           num_succeeded: fragment("CASE WHEN EXCLUDED.num_succeeded > 0 THEN 1 ELSE 0 END")
         ]
       ]

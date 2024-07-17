@@ -1,9 +1,9 @@
 defmodule Probe.Stats.CountryStats do
   use Probe, :schema
 
+  @primary_key {:country, :string, []}
   schema "country_stats" do
-    field :country, :string
-    field :num_runs, :integer
+    field :num_completed, :integer
     field :num_succeeded, :integer
 
     timestamps(type: :utc_datetime_usec)
@@ -11,7 +11,7 @@ defmodule Probe.Stats.CountryStats do
 
   def changeset(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:country, :num_runs, :num_succeeded])
+    |> cast(attrs, [:country, :num_completed, :num_succeeded])
     |> validate_required([:country, :num_succeeded])
     |> unique_constraint(:country)
   end
