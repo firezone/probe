@@ -50,7 +50,7 @@ defmodule Probe.Live.Index do
                   </.link>
                 </li>
                 <li class="inline dark:border-gray-700 border-b-0">
-                  <.link navigate="/stats" class={tab_class(@live_action, [:stats_map, :stats_table])}>
+                  <.link navigate="/stats" class={tab_class(@live_action, [:stats_map, :stats_list])}>
                     View stats
                   </.link>
                 </li>
