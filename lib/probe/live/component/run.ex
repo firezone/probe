@@ -325,11 +325,11 @@ defmodule Probe.Live.Component.Run do
           </p>
         <% end %>
       <% else %>
-        <div calss="block">
+        <div class="block">
           <p class="text-xl font-bold text-gray-900 dark:text-white">
             <%= @os || "Your OS" %> is not supported. Try
             <.link
-              navigate="/results"
+              navigate={~p"/stats"}
               class="text-blue-600 dark:text-blue-400 underline hover:no-underline"
             >
               viewing the results
