@@ -69,4 +69,10 @@ See [SECURITY.md](SECURITY.md)
 
 See https://probe.sh/faq
 
-WireGuard ia 
+## License
+
+See [LICENSE](LICENSE)
+
+## Attribution
+
+WireGuard is a registered trademark of Jason A. Donenfeld.
