@@ -41,7 +41,6 @@ defmodule Probe.Runs do
       |> case do
         {:ok, run} ->
           send(state_machine_pid, {:run_started, run})
-          broadcast_run_event(run, :started)
           {:ok, run}
 
         {:error, reason} ->
