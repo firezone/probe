@@ -310,7 +310,7 @@ defmodule Probe.Live.Component.Run do
                     <.check_row
                       type="Data message"
                       header="0x04"
-                      description="The encrypted payload used to transport application data."
+                      description="The encrypted payload used to transport application data"
                       status={get_in(@run.checks.data_message)}
                       turn_status={get_in(@run.checks.turn_data_message)}
                     />
