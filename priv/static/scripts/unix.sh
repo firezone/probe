@@ -119,7 +119,7 @@ fi
 
 echo "Running test against port $port..."
 
-# Run the test, sending each payload 5 times. It's UDP, after all.
+# Run the test, sending each payload 3 times. It's UDP, after all.
 send_payload "$hs_init"
 send_payload "$turn_hs_init"
 send_payload "$hs_response"
