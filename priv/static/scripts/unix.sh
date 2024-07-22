@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-set -ex
+set -e
 
 payload_interval=0.2
 
