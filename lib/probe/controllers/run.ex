@@ -8,7 +8,7 @@ defmodule Probe.Controllers.Run do
 
   def start(conn, %{"token" => token}) do
     with {:ok, %{session_id: session_id, pid: pid, port: port}} <- Token.verify(token),
-         true <- Process.alive?(pid) do
+         true <- is_pid(pid) and Process.alive?(pid) do
       remote_ip = get_client_ip(conn)
       anonymized_id = get_anonymized_id(session_id, remote_ip)
       {city, region, country, latitude, longitude, provider} = geolocate_ip(remote_ip)

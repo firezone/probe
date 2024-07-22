@@ -1,8 +1,16 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
-set -e
+set -ex
 
 payload_interval=0.2
+
+# Check for required commands
+for cmd in base64 sleep curl; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        echo "Error: $cmd command not found"
+        exit 1
+    fi
+done
 
 # This script is intended to run from https://probe.sh and requires a valid
 # token to start. NOTE: Unfortunately only IPv4 is supported at this time.
@@ -19,9 +27,57 @@ trap cancel EXIT
 
 # Function to send payloads
 send_payload() {
-    payload=$1
+    payload="$1"
+
+    # Determine the appropriate base64 option for decoding
+    base64_option="-d"
+    if base64 --help 2>&1 | grep -q "D"; then
+        base64_option="-D"
+    fi
+
+    # Determine the appropriate nc options
+    nc_cmd="nc"
+    nc_options="-4 -u -w 0"
+
+    # Check for GNU netcat
+    if nc --help 2>&1 | grep -q "GNU"; then
+        echo "GNU netcat detected"
+        nc_options="-u -c"
+
+    # Check for OpenBSD netcat
+    elif nc -h 2>&1 | grep -q "OpenBSD"; then
+        echo "OpenBSD netcat detected"
+        # Keep the default options
+
+    # Check for ncat from Nmap
+    elif nc -h 2>&1 | grep -q "Ncat"; then
+        echo "Nmap netcat (ncat) detected"
+        nc_cmd="ncat"
+        nc_options="--udp --send-only"
+
+    elif netcat --help 2>&1 | grep -q "GNU"; then
+        echo "GNU netcat detected"
+        nc_cmd="netcat"
+        nc_options="-u -c"
+
+    # Check for OpenBSD netcat
+    elif netcat -h 2>&1 | grep -q "OpenBSD"; then
+        echo "OpenBSD netcat detected"
+        nc_cmd="netcat"
+        # Keep the default options
+
+    # If none of the above, keep the default options
+    fi
+
+    if ! command -v "$nc_cmd" >/dev/null 2>&1; then
+        echo "Error: $nc_cmd command not found"
+        exit 1
+    fi
+
+    # Loop to send the payload
     for i in 1 2 3; do
-        echo "$payload" | base64 -d | nc -u -w 0 "$host" "$port"
+        echo "Using $nc_cmd with options: $nc_options"
+        echo "$payload" | base64 "$base64_option" | $nc_cmd $nc_options "$host" "$port"
         sleep $payload_interval
     done
 }
