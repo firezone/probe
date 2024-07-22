@@ -25,58 +25,61 @@ cancel() {
 }
 trap cancel EXIT
 
+# Determine the appropriate base64 option for decoding
+base64_option="-d"
+if base64 --help 2>&1 | grep -q "D"; then
+    base64_option="-D"
+fi
+
+# Determine the appropriate nc options
+nc_cmd="nc"
+nc_options="-4 -u -w 0"
+
+# Check for GNU netcat
+if nc --help 2>&1 | grep -q "GNU"; then
+    echo "GNU netcat detected"
+    nc_options="-u -c"
+
+# Check for OpenBSD netcat
+elif nc -h 2>&1 | grep -q "OpenBSD"; then
+    echo "OpenBSD netcat detected"
+    # Keep the default options
+
+# Check for ncat from Nmap
+elif nc -h 2>&1 | grep -q "Ncat"; then
+    echo "Nmap netcat (ncat) detected"
+    nc_cmd="ncat"
+    nc_options="--udp --send-only"
+
+elif netcat --help 2>&1 | grep -q "GNU"; then
+    echo "GNU netcat detected"
+    nc_cmd="netcat"
+    nc_options="-u -c"
+
+# Check for OpenBSD netcat
+elif netcat -h 2>&1 | grep -q "OpenBSD"; then
+    echo "OpenBSD netcat detected"
+    nc_cmd="netcat"
+    # Keep the default options
+
+# If none of the above, keep the default options
+fi
+
+if ! command -v "$nc_cmd" >/dev/null 2>&1; then
+    echo "Error: $nc_cmd command not found"
+    exit 1
+fi
+
+echo "Using $nc_cmd with options: $nc_options"
+
 # Function to send payloads
 send_payload() {
+    printf '%s' "."
+
     payload="$1"
-
-    # Determine the appropriate base64 option for decoding
-    base64_option="-d"
-    if base64 --help 2>&1 | grep -q "D"; then
-        base64_option="-D"
-    fi
-
-    # Determine the appropriate nc options
-    nc_cmd="nc"
-    nc_options="-4 -u -w 0"
-
-    # Check for GNU netcat
-    if nc --help 2>&1 | grep -q "GNU"; then
-        echo "GNU netcat detected"
-        nc_options="-u -c"
-
-    # Check for OpenBSD netcat
-    elif nc -h 2>&1 | grep -q "OpenBSD"; then
-        echo "OpenBSD netcat detected"
-        # Keep the default options
-
-    # Check for ncat from Nmap
-    elif nc -h 2>&1 | grep -q "Ncat"; then
-        echo "Nmap netcat (ncat) detected"
-        nc_cmd="ncat"
-        nc_options="--udp --send-only"
-
-    elif netcat --help 2>&1 | grep -q "GNU"; then
-        echo "GNU netcat detected"
-        nc_cmd="netcat"
-        nc_options="-u -c"
-
-    # Check for OpenBSD netcat
-    elif netcat -h 2>&1 | grep -q "OpenBSD"; then
-        echo "OpenBSD netcat detected"
-        nc_cmd="netcat"
-        # Keep the default options
-
-    # If none of the above, keep the default options
-    fi
-
-    if ! command -v "$nc_cmd" >/dev/null 2>&1; then
-        echo "Error: $nc_cmd command not found"
-        exit 1
-    fi
 
     # Loop to send the payload
     for i in 1 2 3; do
-        echo "Using $nc_cmd with options: $nc_options"
         echo "$payload" | base64 "$base64_option" | $nc_cmd $nc_options "$host" "$port"
         sleep $payload_interval
     done
@@ -118,20 +121,16 @@ echo "Running test against port $port..."
 
 # Run the test, sending each payload 5 times. It's UDP, after all.
 send_payload "$hs_init"
-echo "."
 send_payload "$turn_hs_init"
-echo "."
 send_payload "$hs_response"
-echo "."
 send_payload "$turn_hs_response"
-echo "."
 send_payload "$cookie_reply"
-echo "."
 send_payload "$turn_cookie_reply"
-echo "."
 send_payload "$data_message"
-echo "."
 send_payload "$turn_data_message"
+
+echo ""
+echo ""
 
 curl -sL -H 'Accept: text/plain' -XPOST "$run_url/complete"
 
