@@ -281,7 +281,7 @@ defmodule Probe.Live.Component.Run do
                         scope="col"
                         class="w-2/12 text-center underline decoration-dashed px-4 py-3"
                       >
-                        With Firezone
+                        Encoded
                       </th>
                     </tr>
                   </thead>
