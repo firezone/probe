@@ -2,7 +2,7 @@
 
 set -e
 
-payload_interval=0.2
+payload_interval=1.0
 
 # Check for required commands
 for cmd in base64 sleep curl; do
@@ -79,7 +79,7 @@ send_payload() {
     payload="$1"
 
     # Loop to send the payload
-    for i in 1 2 3; do
+    for i in 1 2 3 4 5; do
         echo "$payload" | base64 "$base64_option" | $nc_cmd $nc_options "$host" "$port"
         sleep $payload_interval
     done
@@ -119,7 +119,7 @@ fi
 
 echo "Running test against port $port..."
 
-# Run the test, sending each payload 3 times. It's UDP, after all.
+# Run the test, sending each payload 5 times. It's UDP, after all.
 send_payload "$hs_init"
 send_payload "$turn_hs_init"
 send_payload "$hs_response"
@@ -130,6 +130,8 @@ send_payload "$data_message"
 send_payload "$turn_data_message"
 
 echo ""
+echo "Waiting for test to complete..."
+sleep 5
 echo ""
 
 curl -sL -H 'Accept: text/plain' -XPOST "$run_url/complete"

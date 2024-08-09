@@ -1,7 +1,8 @@
 # This script is intended to run from https://probe.sh and requires a valid
 # token to start. NOTE: Unfortunately only IPv4 is supported at this time.
 
-$payload_interval = 200
+# Separate packets by 1 second
+$payload_interval = 1000
 
 # Function to send payloads
 function Send-Payload {
@@ -11,7 +12,7 @@ function Send-Payload {
         [int]$port
     )
 
-    for ($i = 0; $i -lt 3; $i++) {
+    for ($i = 0; $i -lt 5; $i++) {
         $udpClient = New-Object System.Net.Sockets.UdpClient
         $bytes = [System.Convert]::FromBase64String($payload)
         try {
