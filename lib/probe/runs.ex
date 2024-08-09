@@ -109,7 +109,7 @@ defmodule Probe.Runs do
     from(run in Run, as: :runs)
     |> where([runs: runs], is_nil(runs.completed_at))
     |> where([runs: runs], is_nil(runs.canceled_at))
-    |> where([runs: runs], fragment("? < NOW() - INTERVAL '15 seconds'", runs.started_at))
+    |> where([runs: runs], fragment("? < NOW() - INTERVAL '60 seconds'", runs.started_at))
     |> Repo.all()
     |> Enum.each(&cancel_run/1)
   end
