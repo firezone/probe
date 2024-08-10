@@ -97,7 +97,7 @@ defmodule Probe.RunsRun do
   end
 
   describe "cancel_stale_runs!/0" do
-    test "cancels runs that started more than 15 seconds ago" do
+    test "cancels runs that started more than 60 seconds ago" do
       run = Fixtures.Runs.start_run()
       subscribe_to_run_updates(run)
 
@@ -107,7 +107,7 @@ defmodule Probe.RunsRun do
       refute_received {:canceled, ^run}
 
       run
-      |> Ecto.Changeset.change(started_at: DateTime.utc_now() |> DateTime.add(-20, :second))
+      |> Ecto.Changeset.change(started_at: DateTime.utc_now() |> DateTime.add(-70, :second))
       |> Repo.update!()
 
       assert cancel_stale_runs!() == :ok
