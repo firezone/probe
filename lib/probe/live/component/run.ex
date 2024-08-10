@@ -361,7 +361,7 @@ defmodule Probe.Live.Component.Run do
 
   defp windows_cmd(token) do
     ~s"""
-    powershell -command "& { $`start_url='#{url(~p"/runs/#{token}")}'; iwr -useb '#{url(~p"/scripts/windows.ps1")}' | iex }"
+    powershell -command '& { $start_url="#{url(~p"/runs/#{token}")}"; iwr -useb "#{url(~p"/scripts/windows.ps1")}" | iex }'
     """
   end
 
