@@ -23,7 +23,7 @@ defmodule Probe.Live.Component.Run do
           <i>No WireGuard® client required!</i>
         </p>
       </div>
-      <%= if @os && @os =~ ~r/(Mac OS X|Windows|Linux|FreeBSD|OpenBSD)/ do %>
+      <%= if @os && @os =~ ~r/(Mac OS X|Windows|Linux|FreeBSD|OpenBSD|Android)/ do %>
         <%= if connected?(@socket) do %>
           <h3 class="text-xl mb-4 font-semibold text-gray-900 dark:text-white">
             Step 1: Choose your operating system:
@@ -219,7 +219,7 @@ defmodule Probe.Live.Component.Run do
 
           <div
             id="linux-instructions"
-            style={(@os in ["Linux", "FreeBSD", "OpenBSD"] && "display: block") || "display: none"}
+            style={(@os in ["Linux", "FreeBSD", "OpenBSD", "Android"] && "display: block") || "display: none"}
           >
             <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
               Step 3: Run this command:
