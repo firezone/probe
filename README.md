@@ -11,7 +11,9 @@
 
 This repo contains the application source for Probe, a web application for testing WireGuard® connectivity built by the team behind [Firezone](https://www.github.com/firezone/firezone).
 
-**Edit** 11/18/24: The probe.sh service has since been take down. If you're looking to self-host the service, see [our fly.toml](https://github.com/firezone/probe/blob/main/fly.toml) for how we ran the service.
+## Update 11/18/24
+
+The https://probe.sh service has been wound down. If you're looking to self-host Probe, see [our fly.toml](https://github.com/firezone/probe/blob/main/fly.toml) for inspiration.
 
 ## How it works
 
